@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NNT, Economia e ICER</title>
+<style>
+:root {
+    --navy: #00205B;
+    --navy-2: #0a2f72;
+    --navy-3: #00163f;
+    --cyan: #3FA9F5;
+    --gold: #F6B93B;
+    --magenta: #E0389A;
+    --green: #3CCB7F;
+    --green-dark: #145c3c;
+    --magenta-dark: #5c1b4a;
+    --blue-light: #BCC7E5;
+    --blue-grey: #8FA3CF;
+    --ease-pop: cubic-bezier(.34, 1.56, .64, 1);
+    --font: Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; }
+body { background: var(--navy); overflow: hidden; font-family: var(--font); color: var(--blue-light); -webkit-font-smoothing: antialiased; }
+
+#container {
+    position: absolute; left: 50%; top: 50%;
+    width: 1920px; height: 1080px;
+    transform: translate(-50%, -50%) scale(var(--scale, 1));
+    transform-origin: center center;
+    background: var(--navy);
+    overflow: hidden;
+}
+
+.progress { position: absolute; top: 0; left: 0; width: 100%; display: flex; gap: 6px; padding: 0 6px; z-index: 100; }
+.progress button { height: 18px; background: none; border: 0; cursor: pointer; display: block; }
+.progress button span { display: block; height: 6px; background: rgba(255, 255, 255, .15); border-radius: 0 0 3px 3px; overflow: hidden; }
+.progress button i { display: block; height: 100%; background: var(--cyan); transform-origin: left center; transform: scaleX(0); }
+.progress button:focus-visible span { outline: 2px solid var(--gold); }
+
+.footer {
+    position: absolute; bottom: 26px; width: 100%;
+    text-align: center; font-size: 24px; color: var(--blue-grey);
+    z-index: 50; pointer-events: none;
+}
+
+.controls { position: absolute; right: 40px; bottom: 18px; display: flex; gap: 10px; z-index: 100; }
+.controls button {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 2px solid rgba(188, 199, 229, .45);
+    background: var(--navy-3); color: var(--blue-light);
+    font-size: 20px; cursor: pointer;
+}
+.controls button:hover, .controls button:focus-visible { border-color: var(--cyan); color: #fff; outline: none; }
+.clean .controls, .clean .progress { display: none; }
+
+.scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease-in-out, visibility .5s; }
+.scene.active { opacity: 1; visibility: visible; }
+
+.header-titles { position: absolute; top: 64px; left: 100px; width: 1720px; }
+.title-small { font-size: 30px; font-weight: 700; color: var(--cyan); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; }
+.title-large { font-size: 54px; font-weight: 700; line-height: 1.15; color: #fff; }
+
+.graphics-area { position: absolute; top: 210px; left: 0; width: 1920px; height: 660px; }
+.graphics-area svg { display: block; width: 1920px; height: 660px; overflow: visible; }
+
+.legend {
+    position: absolute; bottom: 92px; left: 50%;
+    transform: translate(-50%, 24px);
+    max-width: 1760px;
+    background: var(--navy-3); border: 2px solid var(--cyan);
+    padding: 14px 40px; border-radius: 50px;
+    font-size: 36px; font-weight: 700; color: #fff;
+    opacity: 0;
+    transition: opacity .5s ease, transform .6s var(--ease-pop);
+    text-align: center; white-space: nowrap;
+}
+.legend.on { opacity: 1; transform: translate(-50%, 0); }
+.legend b { color: var(--gold); }
+
+/* ---------- Animações (data-steps) ---------- */
+.pop { opacity: 0; transform: scale(.4); transform-box: fill-box; transform-origin: center; transition: opacity .4s ease, transform .6s var(--ease-pop); }
+.pop.on { opacity: 1; transform: scale(1); }
+.fade { opacity: 0; transition: opacity .6s ease-in-out; }
+.fade.on { opacity: 1; }
+.rise { transform: scaleY(0); transform-box: fill-box; transform-origin: 50% 100%; transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+.rise.on { transform: scaleY(1); }
+.signal { stroke-dasharray: 1 1; stroke-dashoffset: 1; transition: stroke-dashoffset .7s ease-in-out; }
+.signal.on { stroke-dashoffset: 0; }
+
+/* Cena 1 · guarda-chuvas */
+.umb { fill: var(--blue-grey); transition: fill .4s; }
+.umb.win { fill: var(--magenta); }
+.rain line { opacity: 0; }
+.scene.active .rain.on line { animation: fall .9s linear infinite; }
+@keyframes fall {
+    0%   { transform: translateY(0); opacity: 0; }
+    15%  { opacity: .75; }
+    100% { transform: translateY(120px); opacity: 0; }
+}
+.pulse-ring { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.scene.active .pulsing.on .pulse-ring { animation: pulseAnim 1.6s infinite cubic-bezier(.215, .61, .355, 1); }
+.pulse-ring:nth-child(2) { animation-delay: .8s !important; }
+@keyframes pulseAnim { 0% { transform: scale(.8); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+
+/* Cena 3 · marcadores que deslizam na faixa */
+.slider { opacity: 0; transition: opacity .5s; }
+.slider.on { opacity: 1; }
+.scene.active .slider.on .knob { animation: slide 3.2s ease-in-out infinite alternate; }
+.scene.active .slider.on.late .knob { animation-delay: -1.6s; }
+@keyframes slide { from { transform: translateX(0); } to { transform: translateX(600px); } }
+
+/* Cena 4 · meses, balança, marcador do ICER */
+.month { fill: transparent; stroke: var(--green); stroke-width: 3; transition: fill .3s; }
+.month.on { fill: var(--green); }
+.beam { transform-box: view-box; transform-origin: 960px 190px; transform: rotate(-10deg); transition: transform 1.2s cubic-bezier(.34, 1.4, .64, 1); }
+.beam.bal { transform: rotate(0deg); }
+.icer-m { opacity: 0; transform: translateX(560px); transition: opacity .4s, transform 1.4s cubic-bezier(.45, 0, .2, 1); }
+.icer-m.on { opacity: 1; }
+.icer-m.go { transform: translateX(0); }
+
+svg text { user-select: none; font-family: var(--font); font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pop, .fade, .rise, .signal, .legend, .scene, .umb, .month, .beam, .icer-m, .slider { transition-duration: .01ms !important; }
+    .scene.active .rain.on line, .scene.active .pulsing.on .pulse-ring, .scene.active .slider.on .knob { animation: none; }
+}
+</style>
+</head>
+<body>
+<div id="container">
+    <div class="progress" id="progress" role="tablist" aria-label="Cenas"></div>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <symbol id="coin" viewBox="-50 -50 100 100" overflow="visible">
+                <circle r="46" fill="#F6B93B"/>
+                <circle r="36" fill="none" stroke="#00205B" stroke-width="4" opacity=".35"/>
+                <text y="17" font-size="50" fill="#00205B" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700">$</text>
+            </symbol>
+        </defs>
+    </svg>
+
+    <!-- CENA 1 · NNT -->
+    <section id="scene1" class="scene" data-dur="8500" aria-label="NNT: número necessário para tratar">
+        <div class="header-titles">
+            <div class="title-small">Conceito 1 · NNT</div>
+            <h1 class="title-large">Número necessário para tratar</h1>
+        </div>
+        <div class="graphics-area">
+            <svg id="nnt" viewBox="0 0 1920 660" role="img" aria-label="Dez guarda-chuvas distribuídos, um faz a diferença: NNT aproximadamente 10 com zanubrutinibe em vez de ibrutinibe para evitar uma progressão">
+                <text x="960" y="40" font-size="32" fill="#fff" text-anchor="middle" class="fade" data-steps="0">Quantos pacientes trato com zanubrutinibe em vez de ibrutinibe</text>
+                <text x="960" y="84" font-size="32" fill="var(--magenta)" text-anchor="middle" class="fade" data-steps="0">para evitar 1 progressão a mais?</text>
+            </svg>
+        </div>
+        <div class="legend" data-steps="5600">NNT ≈ 10 vs ibrutinibe · <b>quanto menor, melhor</b></div>
+    </section>
+
+    <!-- CENA 2 · economia por paciente em 2 anos -->
+    <section id="scene2" class="scene" data-dur="10500" aria-label="Economia por paciente em dois anos">
+        <div class="header-titles">
+            <div class="title-small">Conceito 2 · Economia por paciente em 2 anos</div>
+            <h1 class="title-large">O preço da caixa não é o custo total</h1>
+        </div>
+        <div class="graphics-area">
+            <svg id="savings" viewBox="0 0 1920 660" role="img" aria-label="Como um carro, o que pesa é o custo ao longo do tempo; com menos internações, arritmias e trocas, o custo total em dois anos fica menor, cerca de 7 mil dólares por paciente em uma simulação">
+                <!-- analogia do carro -->
+                <g class="pop" data-steps="0">
+                    <path d="M 250 300 H 560 Q 582 300 582 280 V 262 Q 582 246 562 242 L 500 230 L 458 186 H 332 L 290 230 H 272 Q 250 232 250 252 Z" fill="var(--cyan)"/>
+                    <path d="M 340 198 H 420 V 230 H 308 Z M 436 198 H 452 L 482 230 H 436 Z" fill="var(--navy-3)"/>
+                    <circle cx="322" cy="302" r="30" fill="var(--navy-3)" stroke="#fff" stroke-width="5"/>
+                    <circle cx="510" cy="302" r="30" fill="var(--navy-3)" stroke="#fff" stroke-width="5"/>
+                </g>
+                <g class="pop" data-steps="800">
+                    <rect x="600" y="150" width="250" height="56" rx="12" fill="var(--gold)"/>
+                    <circle cx="618" cy="178" r="7" fill="var(--navy)"/>
+                    <text x="738" y="187" font-size="26" fill="var(--navy)" text-anchor="middle">preço de compra</text>
+                </g>
+                <path class="fade" data-steps="1300" d="M 140 380 H 860" stroke="var(--blue-grey)" stroke-width="4" stroke-dasharray="18 12"/>
+                <g class="fade" data-steps="1300" font-size="22" fill="var(--blue-grey)" text-anchor="middle">
+                    <text x="300" y="414">ano 1</text>
+                    <text x="700" y="414">ano 2</text>
+                </g>
+                <g class="pop" data-steps="1800">
+                    <rect x="140" y="440" width="200" height="54" rx="27" fill="var(--navy-2)" stroke="var(--gold)" stroke-width="3"/>
+                    <text x="240" y="476" font-size="26" fill="#fff" text-anchor="middle">combustível</text>
+                </g>
+                <g class="pop" data-steps="2200">
+                    <rect x="390" y="440" width="220" height="54" rx="27" fill="var(--navy-2)" stroke="var(--gold)" stroke-width="3"/>
+                    <text x="500" y="476" font-size="26" fill="#fff" text-anchor="middle">manutenção</text>
+                </g>
+                <g class="pop" data-steps="2600">
+                    <rect x="660" y="440" width="200" height="54" rx="27" fill="var(--navy-2)" stroke="var(--gold)" stroke-width="3"/>
+                    <text x="760" y="476" font-size="26" fill="#fff" text-anchor="middle">conserto</text>
+                </g>
+                <text class="fade" data-steps="3000" x="500" y="570" font-size="30" fill="#fff" text-anchor="middle">O que pesa é o custo <tspan fill="var(--gold)">ao longo dos anos</tspan></text>
+
+                <line class="fade" data-steps="3200" x1="960" y1="20" x2="960" y2="600" stroke="rgba(188,199,229,.3)" stroke-width="3" stroke-dasharray="10 10"/>
+            </svg>
+        </div>
+        <div class="legend" data-steps="8000">Menos internação, arritmia e troca → <b>menor custo total</b></div>
+    </section>
+
+    <!-- CENA 3 · NNT e custo juntos -->
+    <section id="scene3" class="scene" data-dur="9000" aria-label="NNT e custo mudam conforme o comparador">
+        <div class="header-titles">
+            <div class="title-small">NNT e custo juntos</div>
+            <h1 class="title-large">Os dois números mudam conforme o comparador</h1>
+        </div>
+        <div class="graphics-area">
+            <svg viewBox="0 0 1920 660" role="img" aria-label="A economia por paciente em dois anos vai de alguns milhares a dezenas de milhares de dólares e o NNT também muda conforme o comparador; leve a ordem de grandeza, não o decimal">
+                <!-- economia -->
+                <g class="fade" data-steps="0">
+                    <text x="510" y="60" font-size="34" fill="var(--gold)" text-anchor="middle">Economia por paciente · 2 anos</text>
+                    <rect x="180" y="170" width="660" height="26" rx="13" fill="var(--navy-2)" stroke="var(--gold)" stroke-width="3"/>
+                    <text x="180" y="236" font-size="24" fill="var(--blue-light)">alguns milhares de US$</text>
+                    <text x="840" y="236" font-size="24" fill="var(--blue-light)" text-anchor="end">dezenas de milhares</text>
+                </g>
+                <g class="slider" data-steps="700">
+                    <g class="knob">
+                        <path d="M 196 140 L 224 140 L 210 162 Z" fill="var(--gold)"/>
+                        <circle cx="210" cy="183" r="15" fill="#fff" stroke="var(--gold)" stroke-width="4"/>
+                    </g>
+                </g>
+                <text class="fade" data-steps="1200" x="510" y="300" font-size="28" fill="#fff" text-anchor="middle">varia conforme o comparador</text>
+
+                <!-- NNT -->
+                <g class="fade" data-steps="1800">
+                    <text x="1410" y="60" font-size="34" fill="var(--cyan)" text-anchor="middle">NNT</text>
+                    <rect x="1080" y="170" width="660" height="26" rx="13" fill="var(--navy-2)" stroke="var(--cyan)" stroke-width="3"/>
+                    <text x="1080" y="236" font-size="24" fill="var(--blue-light)">← menor = melhor</text>
+                    <text x="1740" y="236" font-size="24" fill="var(--blue-light)" text-anchor="end">maior</text>
+                </g>
+                <g class="slider late" data-steps="2300">
+                    <g transform="translate(900 0)"><g class="knob">
+                        <path d="M 196 140 L 224 140 L 210 162 Z" fill="var(--cyan)"/>
+                        <circle cx="210" cy="183" r="15" fill="#fff" stroke="var(--cyan)" stroke-width="4"/>
+                    </g></g>
+                </g>
+                <text class="fade" data-steps="2600" x="1410" y="300" font-size="28" fill="#fff" text-anchor="middle">também muda com o comparador</text>
+
+                <!-- decimal × ordem de grandeza -->
+                <g class="fade" data-steps="3400">
+                    <text x="620" y="440" font-size="50" fill="var(--blue-grey)" text-anchor="middle">US$ 7.xxx,xx</text>
+                    <text x="620" y="530" font-size="50" fill="var(--blue-grey)" text-anchor="middle">NNT 9,x</text>
+                </g>
+                <path class="signal" data-steps="3900" pathLength="1" d="M 460 424 H 780" stroke="var(--magenta)" stroke-width="7" stroke-linecap="round"/>
+                <path class="signal" data-steps="4100" pathLength="1" d="M 520 514 H 720" stroke="var(--magenta)" stroke-width="7" stroke-linecap="round"/>
+                <g class="fade" data-steps="4500" fill="var(--cyan)" font-size="50" text-anchor="middle">
+                    <text x="960" y="440">→</text>
+                    <text x="960" y="530">→</text>
+                </g>
+                <g class="pop" data-steps="4800">
+                    <text x="1300" y="440" font-size="56" fill="var(--gold)" text-anchor="middle">≈ US$ 7 mil</text>
+                </g>
+                <g class="pop" data-steps="5100">
+                    <text x="1300" y="530" font-size="56" fill="var(--cyan)" text-anchor="middle">NNT ≈ 10</text>
+                </g>
+                <text class="fade" data-steps="5600" x="960" y="620" font-size="34" fill="#fff" text-anchor="middle">Leve a <tspan fill="var(--gold)">ordem de grandeza</tspan>, não o decimal</text>
+            </svg>
+        </div>
+        <div class="legend" data-steps="6500">Valor e NNT <b>mudam com o comparador</b></div>
+    </section>
+
+    <!-- CENA 4 · ICER por QALY -->
+    <section id="scene4" class="scene" data-dur="10000" aria-label="ICER por QALY">
+        <div class="header-titles">
+            <div class="title-small">ICER por QALY</div>
+            <h1 class="title-large">Quanto pago a mais por 1 ano de vida bom?</h1>
+        </div>
+        <div class="graphics-area">
+            <svg id="icer" viewBox="0 0 1920 660" role="img" aria-label="Doze meses com saúde plena equivalem a um QALY; o ICER divide o custo adicional pelos QALYs ganhos e, abaixo do limiar, o tratamento é custo-efetivo">
+                <text class="fade" data-steps="2600" x="960" y="112" font-size="26" fill="var(--green)" text-anchor="middle">12 meses com saúde plena = 1 QALY</text>
+
+                <!-- fórmula -->
+                <g class="fade" data-steps="3000">
+                    <text x="150" y="300" font-size="46" fill="#fff">ICER =</text>
+                    <text x="470" y="268" font-size="40" fill="var(--gold)" text-anchor="middle">Δ custo</text>
+                    <line x1="355" y1="288" x2="585" y2="288" stroke="#fff" stroke-width="4"/>
+                    <text x="470" y="336" font-size="40" fill="var(--green)" text-anchor="middle">Δ QALY</text>
+                    <text x="370" y="390" font-size="22" fill="var(--blue-grey)" text-anchor="middle">custo adicional ÷ anos bons ganhos</text>
+                </g>
+                <g class="fade" data-steps="3000" font-size="26" fill="var(--blue-light)">
+                    <text x="1330" y="270">QALY = ano de vida</text>
+                    <text x="1330" y="306">ajustado pela qualidade</text>
+                </g>
+
+                <!-- balança -->
+                <g class="pop" data-steps="3500">
+                    <line x1="960" y1="190" x2="960" y2="372" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+                    <polygon points="915,392 1005,392 960,362" fill="#fff"/>
+                    <circle cx="960" cy="190" r="9" fill="var(--magenta)"/>
+                    <g class="beam" data-steps="4300:bal">
+                        <line x1="800" y1="190" x2="1120" y2="190" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+                        <path d="M 800 190 L 765 268 M 800 190 L 835 268 M 1120 190 L 1085 268 M 1120 190 L 1155 268" stroke="var(--blue-light)" stroke-width="3"/>
+                        <path d="M 755 268 H 845 Q 800 300 755 268 Z" fill="var(--gold)"/>
+                        <path d="M 1075 268 H 1165 Q 1120 300 1075 268 Z" fill="var(--green)"/>
+                        <use href="#coin" x="776" y="216" width="48" height="48"/>
+                        <circle cx="1120" cy="242" r="24" fill="var(--green)"/>
+                        <text x="1120" y="250" font-size="20" fill="var(--navy)" text-anchor="middle">1</text>
+                        <text x="800" y="330" font-size="24" fill="var(--gold)" text-anchor="middle">custo adicional</text>
+                        <text x="1120" y="330" font-size="24" fill="var(--green)" text-anchor="middle">1 ano bom</text>
+                    </g>
+                </g>
+
+                <!-- limiar -->
+                <g class="fade" data-steps="4900">
+                    <rect x="360" y="470" width="840" height="22" rx="11" fill="var(--green-dark)"/>
+                    <rect x="1200" y="470" width="360" height="22" rx="11" fill="var(--magenta-dark)"/>
+                    <rect x="1190" y="470" width="20" height="22" fill="var(--magenta-dark)"/>
+                    <line x1="1200" y1="446" x2="1200" y2="516" stroke="var(--magenta)" stroke-width="5" stroke-dasharray="8 6"/>
+                    <text x="1200" y="436" font-size="22" fill="var(--magenta)" text-anchor="middle">limiar (disposição a pagar)</text>
+                    <text x="360" y="530" font-size="22" fill="var(--blue-grey)">custo-efetivo</text>
+                    <text x="1560" y="530" font-size="22" fill="var(--blue-grey)" text-anchor="end">acima do limite</text>
+                </g>
+                <g class="icer-m" data-steps="5400:on,5700:go">
+                    <circle cx="860" cy="481" r="18" fill="#fff" stroke="var(--green)" stroke-width="5"/>
+                    <text x="860" y="455" font-size="22" fill="#fff" text-anchor="middle">ICER</text>
+                </g>
+
+                <text class="pop" data-steps="7000" x="960" y="610" font-size="46" fill="var(--green)" text-anchor="middle">Abaixo do limite → custo-efetivo</text>
+            </svg>
+        </div>
+        <div class="legend" data-steps="7800">ICER abaixo do limiar = <b>custo-efetivo</b></div>
+    </section>
+
+    <div class="footer">Simulações dos EUA. Não são dados do SUS ou da saúde suplementar brasileira.</div>
+
+    <div class="controls">
+        <button id="btnPrev" type="button" aria-label="Cena anterior">◀</button>
+        <button id="btnPlay" type="button" aria-label="Pausar">❚❚</button>
+        <button id="btnNext" type="button" aria-label="Próxima cena">▶</button>
+    </div>
+</div>
+
+<script>
+(() => {
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, parent, text) {
+        const n = document.createElementNS(SVG_NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        if (text != null) n.textContent = text;
+        if (parent) parent.appendChild(n);
+        return n;
+    }
+
+    /* CENA 1 · chuva + 10 guarda-chuvas, um se destaca */
+    (function buildNNT() {
+        const svg = document.getElementById('nnt');
+        const xs = Array.from({ length: 10 }, (_, i) => 330 + i * 140);
+
+        // chuva (atrás dos guarda-chuvas)
+        const rain = el('g', { class: 'rain', 'data-steps': 300, stroke: 'var(--blue-grey)', 'stroke-width': 3, 'stroke-linecap': 'round' }, svg);
+        let seed = 7;
+        const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+        for (let i = 0; i < 46; i++) {
+            const x = 250 + rnd() * 1420, y = 120 + rnd() * 30;
+            el('line', { x1: x, y1: y, x2: x - 4, y2: y + 18, style: `animation-delay:${(-rnd() * 0.9).toFixed(2)}s` }, rain);
+        }
+
+        xs.forEach((x, i) => {
+            const win = i === 9;
+            const g = el('g', { class: 'pop', 'data-steps': 600 + i * 120 }, svg);
+            const color = win ? { class: 'umb', 'data-steps': '2600:win' } : { class: 'umb' };
+            // pessoa
+            el('circle', { cx: x, cy: 332, r: 17, ...color }, g);
+            el('path', { d: `M ${x - 24} 404 Q ${x - 24} 356 ${x} 356 Q ${x + 24} 356 ${x + 24} 404 Z`, ...color }, g);
+            // guarda-chuva
+            el('path', {
+                d: `M ${x - 56} 272 A 56 48 0 0 1 ${x + 56} 272 Q ${x + 42} 262 ${x + 28} 272 Q ${x + 14} 262 ${x} 272 Q ${x - 14} 262 ${x - 28} 272 Q ${x - 42} 262 ${x - 56} 272 Z`,
+                ...color,
+            }, g);
+            el('path', { d: `M ${x} 272 V 298 q 0 9 -8 9 q -7 0 -7 -7`, fill: 'none', stroke: win ? 'var(--magenta)' : 'var(--blue-grey)', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+        });
+
+        // destaque do 10º
+        const x = xs[9];
+        const pulse = el('g', { class: 'pulsing', 'data-steps': 2800, fill: 'none', stroke: 'var(--magenta)', 'stroke-width': 4 }, svg);
+        el('circle', { class: 'pulse-ring', cx: x, cy: 300, r: 70 }, pulse);
+        el('circle', { class: 'pulse-ring', cx: x, cy: 300, r: 70 }, pulse);
+        const tag = el('g', { class: 'pop', 'data-steps': 3000 }, svg);
+        el('rect', { x: x - 100, y: 150, width: 200, height: 46, rx: 23, fill: 'var(--magenta)' }, tag);
+        el('text', { x, y: 181, 'font-size': 24, fill: '#fff', 'text-anchor': 'middle' }, tag, '1 a mais seco');
+
+        // chave e NNT
+        el('path', { class: 'signal', 'data-steps': 3600, pathLength: 1, d: `M ${xs[0] - 50} 428 V 446 H ${xs[9] + 50} V 428`, fill: 'none', stroke: '#fff', 'stroke-width': 4 }, svg);
+        el('text', { class: 'fade', 'data-steps': 3900, x: 960, y: 486, 'font-size': 26, fill: 'var(--blue-light)', 'text-anchor': 'middle' },
+            svg, '10 tratados com zanubrutinibe em vez de ibrutinibe → 1 progressão evitada');
+        const nnt = el('text', { class: 'pop', 'data-steps': 4500, x: 960, y: 580, 'font-size': 80, fill: '#fff', 'text-anchor': 'middle' }, svg);
+        el('tspan', {}, nnt, 'NNT ≈ ');
+        el('tspan', { fill: 'var(--magenta)' }, nnt, '10');
+        el('text', { class: 'fade', 'data-steps': 5000, x: 960, y: 630, 'font-size': 28, fill: 'var(--blue-grey)', 'text-anchor': 'middle' }, svg, 'quanto menor o NNT, melhor');
+    })();
+
+    /* CENA 2 · barras empilhadas de custo total em 2 anos (proporções ilustrativas) */
+    (function buildSavings() {
+        const svg = document.getElementById('savings');
+        const SEGS = [
+            { k: 'medicamento', c: 'var(--gold)' },
+            { k: 'internações', c: 'var(--magenta)' },
+            { k: 'arritmias', c: 'var(--cyan)' },
+            { k: 'trocas de remédio', c: 'var(--blue-grey)' },
+        ];
+        const leg = el('g', { class: 'fade', 'data-steps': 3400 }, svg);
+        SEGS.forEach((s, i) => {
+            const lx = 1070 + (i % 2) * 280, ly = 30 + Math.floor(i / 2) * 40;
+            el('rect', { x: lx, y: ly, width: 24, height: 24, rx: 4, fill: s.c }, leg);
+            el('text', { x: lx + 34, y: ly + 20, 'font-size': 22, fill: 'var(--blue-light)' }, leg, s.k);
+        });
+
+        const BASE = 560;
+        const bars = [
+            { name: 'outro iBTK', x: 1110, h: [200, 110, 80, 60], t: 3800 },
+            { name: 'zanubrutinibe', x: 1370, h: [200, 50, 30, 20], t: 5300 },
+        ];
+        el('line', { class: 'fade', 'data-steps': 3400, x1: 1060, y1: BASE, x2: 1640, y2: BASE, stroke: 'var(--blue-light)', 'stroke-width': 3 }, svg);
+        bars.forEach(b => {
+            let y = BASE;
+            b.h.forEach((h, k) => {
+                y -= h;
+                el('rect', { class: 'rise', 'data-steps': b.t + k * 300, x: b.x, y, width: 200, height: h, fill: SEGS[k].c, stroke: 'var(--navy)', 'stroke-width': 2 }, svg);
+            });
+            el('text', { class: 'fade', 'data-steps': b.t, x: b.x + 100, y: BASE + 40, 'font-size': 28, fill: '#fff', 'text-anchor': 'middle' }, svg, b.name);
+        });
+        const top1 = BASE - 450, top2 = BASE - 300;
+        el('path', { class: 'signal', 'data-steps': 6800, pathLength: 1, d: `M 1310 ${top1} H 1650 M 1570 ${top2} H 1650`, stroke: 'var(--gold)', 'stroke-width': 3, 'stroke-dasharray': '1 1', fill: 'none' }, svg);
+        el('path', { class: 'signal', 'data-steps': 7100, pathLength: 1, d: `M 1650 ${top1} V ${top2}`, stroke: 'var(--gold)', 'stroke-width': 5, fill: 'none' }, svg);
+        const lab = el('g', { class: 'pop', 'data-steps': 7300 }, svg);
+        el('text', { x: 1670, y: 168, 'font-size': 36, fill: 'var(--gold)' }, lab, '≈ US$ 7 mil');
+        el('text', { x: 1670, y: 202, 'font-size': 24, fill: '#fff' }, lab, 'a menos por');
+        el('text', { x: 1670, y: 232, 'font-size': 24, fill: '#fff' }, lab, 'paciente em 2 anos');
+        el('text', { class: 'fade', 'data-steps': 7300, x: 1350, y: 645, 'font-size': 20, fill: 'var(--blue-grey)', 'text-anchor': 'middle' },
+            svg, 'simulação de outra fonte (não é o MAIC) · proporções das barras ilustrativas');
+    })();
+
+    /* CENA 4 · 12 meses que viram 1 QALY */
+    (function buildMonths() {
+        const svg = document.getElementById('icer');
+        for (let i = 0; i < 12; i++) {
+            el('rect', { class: 'month', 'data-steps': 300 + i * 180, x: 607 + i * 60, y: 20, width: 46, height: 46, rx: 8 }, svg);
+        }
+    })();
+
+    /* =========================================================
+       Player · ?only=N toca só a cena N e para no fim (para gerar GIF)
+       ========================================================= */
+    const container = document.getElementById('container');
+    const scenes = [...document.querySelectorAll('.scene')];
+    const durs = scenes.map(s => +s.dataset.dur || 7000);
+    const progress = document.getElementById('progress');
+    const btnPlay = document.getElementById('btnPlay');
+    const params = new URLSearchParams(location.search);
+    const only = params.has('only') ? +params.get('only') - 1 : -1;
+    if (params.has('clean')) container.classList.add('clean');
+
+    function resize() {
+        const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+        container.style.setProperty('--scale', s);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const timelines = scenes.map(scene => {
+        const items = [];
+        scene.querySelectorAll('[data-steps]').forEach(node => {
+            node.dataset.steps.split(',').forEach(tok => {
+                const [ms, cls = 'on'] = tok.trim().split(':');
+                items.push({ el: node, at: +ms, cls });
+            });
+        });
+        return items;
+    });
+    const classesOf = timelines.map(items => [...new Set(items.map(i => i.cls))]);
+
+    const bars = scenes.map((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.style.flex = durs[i];
+        b.setAttribute('aria-label', `Ir para a cena ${i + 1}`);
+        b.innerHTML = '<span><i></i></span>';
+        b.addEventListener('click', () => goTo(i));
+        progress.appendChild(b);
+        return b.querySelector('i');
+    });
+
+    let idx = -1, t = 0, playing = true, last = performance.now();
+
+    function render() {
+        timelines[idx].forEach(({ el, at, cls }) => el.classList.toggle(cls, t >= at));
+        bars.forEach((bar, i) => {
+            const f = i < idx ? 1 : i === idx ? Math.min(t / durs[i], 1) : 0;
+            bar.style.transform = `scaleX(${f})`;
+        });
+    }
+
+    function goTo(i) {
+        const n = (i + scenes.length) % scenes.length;
+        if (idx >= 0) scenes[idx].classList.remove('active');
+        idx = n;
+        t = 0;
+        timelines[idx].forEach(({ el }) => el.classList.remove(...classesOf[idx]));
+        void scenes[idx].offsetWidth;
+        scenes[idx].classList.add('active');
+        render();
+    }
+
+    function setPlaying(p) {
+        playing = p;
+        btnPlay.textContent = p ? '❚❚' : '▶';
+        btnPlay.setAttribute('aria-label', p ? 'Pausar' : 'Reproduzir');
+    }
+
+    function frame(now) {
+        const dt = Math.min(now - last, 100);
+        last = now;
+        if (playing) {
+            t += dt;
+            if (t >= durs[idx]) {
+                if (only >= 0) { t = durs[idx]; setPlaying(false); window.player.done = true; }
+                else goTo(idx + 1);
+            }
+        }
+        render();
+        requestAnimationFrame(frame);
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => goTo(idx - 1));
+    document.getElementById('btnNext').addEventListener('click', () => goTo(idx + 1));
+    btnPlay.addEventListener('click', () => setPlaying(!playing));
+    window.addEventListener('keydown', e => {
+        if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+        else if (e.key === 'ArrowRight') goTo(idx + 1);
+        else if (e.key === 'ArrowLeft') goTo(idx - 1);
+    });
+
+    window.player = { goTo, seek(ms) { t = ms; render(); }, pause: () => setPlaying(false), done: false };
+    const m = location.hash.match(/^#(\d)(?:@(\d+))?$/);
+    window.addEventListener('load', () => {
+        goTo(only >= 0 ? only : m ? +m[1] - 1 : 0);
+        if (m && m[2]) { setPlaying(false); t = +m[2]; render(); }
+        requestAnimationFrame(frame);
+    });
+})();
+</script>
+</body>
+</html>
