@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cinases, BTK e Farmacóforo</title>
+<style>
+:root {
+    --bg-dark: #050f1a;
+    --bg-light: #0f2a5c;
+    --cyan: #00B4D8;
+    --amber: #FFB703;
+    --green: #2ecc71;
+    --red: #E63946;
+    --red-text: #ff6b78;
+    --blue-light: #cfe4ff;
+    --blue-grey: #8aa7d0;
+    --ease-pop: cubic-bezier(.34, 1.56, .64, 1);
+    --font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { width: 100%; height: 100%; }
+
+body {
+    background: var(--bg-dark);
+    overflow: hidden;
+    font-family: var(--font);
+    color: var(--blue-light);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Palco fixo 1920x1080, centralizado e escalado para caber na janela */
+#container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1920px;
+    height: 1080px;
+    transform: translate(-50%, -50%) scale(var(--scale, 1));
+    transform-origin: center center;
+    background: radial-gradient(circle at center, var(--bg-light) 0%, var(--bg-dark) 100%);
+    overflow: hidden;
+}
+
+/* ---------- Progresso (um segmento por cena, clicável) ---------- */
+.progress {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    display: flex;
+    gap: 6px;
+    padding: 0 6px;
+    z-index: 100;
+}
+.progress button {
+    flex: 1;
+    height: 18px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    display: block;
+}
+.progress button span {
+    display: block;
+    height: 6px;
+    background: rgba(255, 255, 255, .12);
+    border-radius: 0 0 3px 3px;
+    overflow: hidden;
+}
+.progress button i {
+    display: block;
+    height: 100%;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    transform-origin: left center;
+    transform: scaleX(0);
+}
+.progress button:focus-visible span { outline: 2px solid var(--amber); }
+
+.footer {
+    position: absolute;
+    bottom: 24px;
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--blue-grey);
+    letter-spacing: 4px;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.controls {
+    position: absolute;
+    right: 40px;
+    bottom: 18px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+}
+.controls button {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(138, 167, 208, .45);
+    background: rgba(5, 15, 26, .6);
+    color: var(--blue-light);
+    font-size: 20px;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+}
+.controls button:hover, .controls button:focus-visible {
+    border-color: var(--cyan);
+    color: #fff;
+    outline: none;
+}
+
+/* ---------- Cenas ---------- */
+.scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .5s ease-in-out, visibility .5s;
+}
+.scene.active { opacity: 1; visibility: visible; }
+
+.header-titles {
+    position: absolute;
+    top: 64px;
+    left: 100px;
+    width: 1720px;
+}
+.title-small {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--amber);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.title-large {
+    font-size: 54px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #fff;
+}
+
+.graphics-area {
+    position: absolute;
+    top: 210px;
+    left: 0;
+    width: 1920px;
+    height: 660px;
+}
+.graphics-area svg {
+    display: block;
+    width: 1920px;
+    height: 660px;
+    overflow: visible;
+}
+
+.legend {
+    position: absolute;
+    bottom: 92px;
+    left: 50%;
+    transform: translate(-50%, 24px);
+    max-width: 1760px;
+    background: rgba(10, 31, 68, .88);
+    border: 2px solid var(--cyan);
+    padding: 14px 40px;
+    border-radius: 50px;
+    font-size: 36px;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+    opacity: 0;
+    transition: opacity .5s ease, transform .6s var(--ease-pop);
+    text-align: center;
+    white-space: nowrap;
+}
+.legend.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Elementos animados (ativados por data-steps) ---------- */
+.pop {
+    opacity: 0;
+    transform: scale(.4);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: opacity .4s ease, transform .6s var(--ease-pop);
+}
+.pop.on { opacity: 1; transform: scale(1); }
+
+.fade { opacity: 0; transition: opacity .6s ease-in-out; }
+.fade.on { opacity: 1; }
+
+/* Traço que "se desenha": pathLength="1" normaliza o comprimento */
+.signal {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1s ease-in-out;
+}
+.signal.on { stroke-dashoffset: 0; }
+.arrowhead { opacity: 0; transition: opacity .25s ease; }
+.arrowhead.on { opacity: 1; }
+
+.switch {
+    fill: var(--bg-dark);
+    stroke: var(--cyan);
+    stroke-width: 4;
+    transition: fill .4s, stroke .4s;
+}
+.switch.on {
+    fill: var(--green);
+    stroke: var(--green);
+}
+.switch-glow { opacity: 0; transition: opacity .4s; }
+.switch-glow.on { opacity: 1; }
+
+/* P (fosfato) que viaja do ATP até o interruptor */
+.fly {
+    opacity: 0;
+    transition: opacity .3s ease, transform 1.2s cubic-bezier(.45, 0, .2, 1);
+}
+.fly.vis { opacity: 1; }
+.fly.go { transform: translate(800px, -350px); }
+.fly.gone { opacity: 0; transition: opacity .2s ease, transform 1.2s cubic-bezier(.45, 0, .2, 1); }
+.dim { transition: opacity .4s; }
+.dim.on { opacity: .25; }
+
+/* Fármaco deslizando até o bolso da BTK */
+.drug {
+    opacity: 0;
+    transform: translateX(-560px);
+    transition: opacity .5s ease, transform 1.4s cubic-bezier(.45, 0, .2, 1);
+}
+.drug.on { opacity: 1; }
+.drug.dock { transform: translateX(0); }
+
+/* Anéis de pulso: só rodam enquanto a cena está ativa */
+.pulse-ring {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+}
+.scene.active .pulse-ring {
+    animation: pulseAnim 2s infinite cubic-bezier(.215, .61, .355, 1);
+}
+.pulse-ring:nth-child(2) { animation-delay: .6s; }
+.pulse-ring:nth-child(3) { animation-delay: 1.2s; }
+@keyframes pulseAnim {
+    0%   { transform: scale(.6); opacity: 1; stroke-width: 8px; }
+    100% { transform: scale(3.4); opacity: 0; stroke-width: 2px; }
+}
+
+/* ---------- Tipografia SVG ---------- */
+svg text { user-select: none; font-family: var(--font); font-weight: 700; }
+.t-xl { font-size: 64px; }
+.t-lg { font-size: 48px; }
+.t-md { font-size: 36px; }
+.t-sm { font-size: 28px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pop, .fade, .signal, .arrowhead, .switch, .fly, .drug, .legend, .scene {
+        transition-duration: .01ms !important;
+    }
+    .scene.active .pulse-ring { animation: none; }
+}
+</style>
+</head>
+<body>
+<div id="container">
+    <div class="progress" id="progress" role="tablist" aria-label="Cenas"></div>
+
+    <!-- Símbolos reutilizáveis (viewBox centrado em 0,0) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <symbol id="bell" viewBox="-50 -50 100 100" overflow="visible">
+                <circle cy="-38" r="6" fill="#FFB703"/>
+                <path d="M-36 20 Q-36 -30 0 -30 Q36 -30 36 20 Z" fill="#FFB703"/>
+                <rect x="-44" y="16" width="88" height="10" rx="5" fill="#FFB703"/>
+                <circle cy="36" r="9" fill="#FFB703"/>
+            </symbol>
+            <symbol id="germ" viewBox="-50 -50 100 100" overflow="visible">
+                <path d="M-44 0H44M0 -44V44M-31 -31L31 31M-31 31L31 -31" stroke="#E63946" stroke-width="8" stroke-linecap="round"/>
+                <circle r="29" fill="#E63946"/>
+                <circle cx="-10" cy="-6" r="5" fill="#050f1a"/>
+                <circle cx="10" cy="-6" r="5" fill="#050f1a"/>
+                <path d="M-11 9 Q0 17 11 9" fill="none" stroke="#050f1a" stroke-width="4" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="antibody-x" viewBox="-50 -50 100 100" overflow="visible">
+                <path d="M0 46V0M0 0L-32 -42M0 0L32 -42" stroke="#8aa7d0" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M-46 -46L46 46M46 -46L-46 46" stroke="#E63946" stroke-width="10" stroke-linecap="round"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <!-- CENA 1 -->
+    <section id="scene1" class="scene" aria-label="Cena 1: o que é uma cinase">
+        <div class="header-titles">
+            <div class="title-small">2.1 · O que é uma cinase</div>
+            <h1 class="title-large">Cinase é o dono do interruptor da célula</h1>
+        </div>
+
+        <div class="graphics-area">
+            <svg viewBox="0 0 1920 660" role="img" aria-label="Uma cinase usa o fosfato do ATP para ligar interruptores dentro da célula">
+                <g class="fade" data-steps="0">
+                    <circle cx="1330" cy="330" r="270" fill="rgba(0,180,216,.06)" stroke="var(--cyan)" stroke-width="6"/>
+                    <text x="1330" y="46" class="t-md" text-anchor="middle" fill="var(--cyan)">CÉLULA</text>
+                    <text x="1330" y="480" class="t-sm" text-anchor="middle" fill="var(--blue-grey)">proteínas-alvo (interruptores)</text>
+
+                    <rect class="switch" data-steps="3500" id="sw1" x="1290" y="190" width="80" height="40" rx="20"/>
+                    <rect class="switch" data-steps="3700" id="sw2" x="1230" y="270" width="80" height="40" rx="20"/>
+                    <rect class="switch" data-steps="3900" id="sw3" x="1350" y="270" width="80" height="40" rx="20"/>
+                    <rect class="switch" data-steps="4100" id="sw4" x="1170" y="350" width="80" height="40" rx="20"/>
+                    <rect class="switch" data-steps="4300" id="sw5" x="1290" y="350" width="80" height="40" rx="20"/>
+                    <rect class="switch" data-steps="4500" id="sw6" x="1410" y="350" width="80" height="40" rx="20"/>
+                </g>
+
+                <g class="pop" data-steps="500">
+                    <path d="M 300 200 C 450 120, 550 250, 480 400 C 400 550, 200 450, 250 300 Z" fill="var(--cyan)"/>
+                    <text x="370" y="330" class="t-lg" fill="var(--bg-dark)" text-anchor="middle">CINASE</text>
+                </g>
+
+                <g class="pop" data-steps="1000">
+                    <circle cx="330" cy="560" r="56" fill="var(--amber)"/>
+                    <text x="330" y="574" class="t-md" fill="var(--bg-dark)" text-anchor="middle">ATP</text>
+                    <circle cx="430" cy="560" r="22" fill="var(--amber)"/>
+                    <circle cx="480" cy="560" r="22" fill="var(--amber)"/>
+                    <circle class="dim" data-steps="1900" cx="530" cy="560" r="22" fill="var(--amber)"/>
+                    <text x="430" y="570" font-size="24" fill="var(--bg-dark)" text-anchor="middle">P</text>
+                    <text x="480" y="570" font-size="24" fill="var(--bg-dark)" text-anchor="middle">P</text>
+                    <text x="530" y="570" font-size="24" fill="var(--bg-dark)" text-anchor="middle">P</text>
+                </g>
+
+                <path class="signal" data-steps="1500" data-arrow pathLength="1" d="M 570 300 Q 790 300 1000 330" fill="none" stroke="var(--cyan)" stroke-width="10" stroke-linecap="round"/>
+
+                <g class="fly" data-steps="1900:vis,2300:go,3550:gone">
+                    <circle cx="530" cy="560" r="28" fill="var(--amber)" stroke="#fff" stroke-width="3"/>
+                    <text x="530" y="572" class="t-sm" fill="var(--bg-dark)" text-anchor="middle">P</text>
+                </g>
+
+                <!-- brilho dos interruptores ligados -->
+                <g fill="none" stroke="var(--green)" stroke-width="3">
+                    <rect class="switch-glow" data-steps="3500" x="1282" y="182" width="96" height="56" rx="28"/>
+                    <rect class="switch-glow" data-steps="3700" x="1222" y="262" width="96" height="56" rx="28"/>
+                    <rect class="switch-glow" data-steps="3900" x="1342" y="262" width="96" height="56" rx="28"/>
+                    <rect class="switch-glow" data-steps="4100" x="1162" y="342" width="96" height="56" rx="28"/>
+                    <rect class="switch-glow" data-steps="4300" x="1282" y="342" width="96" height="56" rx="28"/>
+                    <rect class="switch-glow" data-steps="4500" x="1402" y="342" width="96" height="56" rx="28"/>
+                </g>
+            </svg>
+        </div>
+
+        <div class="legend" data-steps="5000">Fosforilar = ligar o interruptor</div>
+    </section>
+
+    <!-- CENA 2 -->
+    <section id="scene2" class="scene" aria-label="Cena 2: BTK no linfócito B">
+        <div class="header-titles">
+            <div class="title-small">2.1 · BTK</div>
+            <h1 class="title-large">BTK mora no linfócito B e é peça-chave do BCR</h1>
+        </div>
+
+        <div class="graphics-area">
+            <svg viewBox="0 0 1920 660" role="img" aria-label="O BCR na membrana do linfócito B aciona a BTK, que envia o sinal ao núcleo">
+                <g class="fade" data-steps="0">
+                    <circle cx="620" cy="360" r="280" fill="rgba(138,167,208,.06)" stroke="var(--blue-grey)" stroke-width="6"/>
+                    <text x="310" y="372" class="t-md" text-anchor="end" fill="var(--blue-grey)">LINFÓCITO B</text>
+                </g>
+
+                <g class="pop" data-steps="500">
+                    <use href="#bell" x="570" y="10" width="100" height="100"/>
+                    <line x1="620" y1="108" x2="620" y2="160" stroke="var(--amber)" stroke-width="10" stroke-linecap="round"/>
+                    <text x="700" y="70" class="t-md" fill="var(--amber)">BCR (campainha)</text>
+                </g>
+
+                <g class="pop" data-steps="1000">
+                    <circle cx="620" cy="260" r="65" fill="var(--cyan)"/>
+                    <text x="620" y="276" class="t-lg" fill="var(--bg-dark)" text-anchor="middle">BTK</text>
+                </g>
+
+                <g class="pop" data-steps="1500">
+                    <circle cx="620" cy="510" r="100" fill="rgba(207,228,255,.06)" stroke="var(--blue-light)" stroke-width="6" stroke-dasharray="15 15"/>
+                    <text x="620" y="522" class="t-md" fill="var(--blue-light)" text-anchor="middle">NÚCLEO</text>
+                </g>
+
+                <path class="signal" data-steps="2000" data-arrow pathLength="1" d="M 620 166 L 620 176" fill="none" stroke="var(--green)" stroke-width="8"/>
+                <path class="signal" data-steps="2500" data-arrow pathLength="1" d="M 620 330 L 620 372" fill="none" stroke="var(--green)" stroke-width="8"/>
+
+                <text x="1060" y="190" class="t-sm" fill="var(--blue-grey)">O sinal manda a célula:</text>
+                <g class="t-lg" fill="var(--green)">
+                    <text x="1060" y="270" class="fade" data-steps="3000">→ Sobreviva</text>
+                    <text x="1060" y="360" class="fade" data-steps="3400">→ Multiplique-se</text>
+                    <text x="1060" y="450" class="fade" data-steps="3800">→ Vá aos gânglios</text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="legend" data-steps="4600">O BCR toca · a BTK passa o recado</div>
+    </section>
+
+    <!-- CENA 3 -->
+    <section id="scene3" class="scene" aria-label="Cena 3: BTK na LLC">
+        <div class="header-titles">
+            <div class="title-small">2.1 · LLC</div>
+            <h1 class="title-large">Na LLC, a célula maligna toca essa campainha o tempo todo</h1>
+        </div>
+
+        <div class="graphics-area">
+            <svg viewBox="0 0 1920 660" role="img" aria-label="Na LLC a BTK fica ativa sem parar e gera linfócitos malignos">
+                <g class="fade" data-steps="300">
+                    <g fill="none" stroke="var(--red)" stroke-width="6">
+                        <circle cx="470" cy="62" r="28" class="pulse-ring"/>
+                        <circle cx="470" cy="62" r="28" class="pulse-ring"/>
+                        <circle cx="470" cy="62" r="28" class="pulse-ring"/>
+                    </g>
+                </g>
+
+                <g class="fade" data-steps="0">
+                    <circle cx="470" cy="360" r="280" fill="rgba(230,57,70,.06)" stroke="var(--red)" stroke-width="6"/>
+                    <use href="#bell" x="420" y="12" width="100" height="100"/>
+                    <line x1="470" y1="108" x2="470" y2="160" stroke="var(--amber)" stroke-width="10" stroke-linecap="round"/>
+
+                    <circle cx="470" cy="290" r="90" fill="var(--red)"/>
+                    <text x="470" y="282" class="t-lg" fill="#fff" text-anchor="middle">BTK</text>
+                    <text x="470" y="318" font-size="24" fill="#fff" text-anchor="middle">ATIVA</text>
+                    <text x="470" y="346" font-size="24" fill="#fff" text-anchor="middle">SEM PARAR</text>
+                </g>
+
+                <path class="signal" data-steps="800" data-arrow pathLength="1" d="M 790 330 Q 1050 150 1340 150" fill="none" stroke="var(--red)" stroke-width="10" stroke-linecap="round"/>
+                <path class="signal" data-steps="1300" data-arrow pathLength="1" d="M 790 360 L 1340 360" fill="none" stroke="var(--red)" stroke-width="10" stroke-linecap="round"/>
+                <path class="signal" data-steps="1800" data-arrow pathLength="1" d="M 790 390 Q 1050 570 1340 570" fill="none" stroke="var(--red)" stroke-width="10" stroke-linecap="round"/>
+
+                <text x="1060" y="342" class="t-sm fade" data-steps="1500" text-anchor="middle" fill="var(--red-text)">sinal de sobrevivência</text>
+
+                <g class="pop" data-steps="1600">
+                    <circle cx="1480" cy="150" r="88" fill="rgba(230,57,70,.2)" stroke="var(--red)" stroke-width="6"/>
+                    <text x="1480" y="148" class="t-sm" fill="var(--blue-light)" text-anchor="middle">Linfócito</text>
+                    <text x="1480" y="182" class="t-sm" fill="var(--blue-light)" text-anchor="middle">maligno</text>
+                </g>
+                <g class="pop" data-steps="2100">
+                    <circle cx="1480" cy="360" r="88" fill="rgba(230,57,70,.2)" stroke="var(--red)" stroke-width="6"/>
+                    <text x="1480" y="358" class="t-sm" fill="var(--blue-light)" text-anchor="middle">Linfócito</text>
+                    <text x="1480" y="392" class="t-sm" fill="var(--blue-light)" text-anchor="middle">maligno</text>
+                </g>
+                <g class="pop" data-steps="2600">
+                    <circle cx="1480" cy="570" r="88" fill="rgba(230,57,70,.2)" stroke="var(--red)" stroke-width="6"/>
+                    <text x="1480" y="568" class="t-sm" fill="var(--blue-light)" text-anchor="middle">Linfócito</text>
+                    <text x="1480" y="602" class="t-sm" fill="var(--blue-light)" text-anchor="middle">maligno</text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="legend" data-steps="3800">Sinal de sobrevivência contínuo · a doença avança</div>
+    </section>
+
+    <!-- CENA 4 -->
+    <section id="scene4" class="scene" aria-label="Cena 4: curiosidade sobre Ogden Bruton">
+        <div class="header-titles">
+            <div class="title-small">2.1 · Curiosidade</div>
+            <h1 class="title-large">O nome vem do pediatra Ogden Bruton</h1>
+        </div>
+
+        <div class="graphics-area">
+            <svg viewBox="0 0 1920 660" role="img" aria-label="Sem BTK funcional o linfócito B não amadurece, faltam anticorpos e há infecções de repetição">
+                <text x="960" y="64" class="fade" data-steps="0" font-size="50" fill="var(--amber)" text-anchor="middle">Agamaglobulinemia ligada ao X</text>
+
+                <g class="pop" data-steps="600">
+                    <circle cx="440" cy="200" r="42" fill="var(--cyan)"/>
+                    <path d="M 375 380 C 375 255 505 255 505 380 Z" fill="var(--cyan)"/>
+                    <circle cx="600" cy="225" r="38" fill="var(--cyan)"/>
+                    <path d="M 540 380 C 540 270 660 270 660 380 Z" fill="var(--cyan)"/>
+                    <text x="520" y="440" class="t-md" fill="var(--blue-light)" text-anchor="middle">Sem BTK funcional</text>
+                </g>
+
+                <text x="900" y="256" class="t-sm fade" data-steps="1600" fill="var(--amber)" text-anchor="middle">B não amadurece</text>
+                <path class="signal" data-steps="1600" data-arrow pathLength="1" d="M 740 290 H 1060" fill="none" stroke="var(--amber)" stroke-width="10" stroke-linecap="round"/>
+
+                <g class="pop" data-steps="2300">
+                    <use href="#antibody-x" x="1105" y="195" width="150" height="150"/>
+                    <use href="#antibody-x" x="1285" y="195" width="150" height="150"/>
+                    <use href="#antibody-x" x="1465" y="195" width="150" height="150"/>
+                    <text x="1360" y="440" class="t-md" fill="var(--blue-light)" text-anchor="middle">Sem anticorpos</text>
+                </g>
+
+                <g class="pop" data-steps="3300">
+                    <use href="#germ" x="595" y="505" width="90" height="90"/>
+                    <use href="#germ" x="685" y="505" width="90" height="90"/>
+                    <use href="#germ" x="775" y="505" width="90" height="90"/>
+                    <text x="895" y="565" font-size="40" fill="var(--red-text)">Infecções de repetição</text>
+                </g>
+            </svg>
+        </div>
+
+        <div class="legend" data-steps="4500">Bloquear BTK tem preço no sistema imune</div>
+    </section>
+
+    <!-- CENA 5 -->
+    <section id="scene5" class="scene" aria-label="Cena 5: farmacóforo do iBTK">
+        <div class="header-titles">
+            <div class="title-small">2.2 · Farmacóforo</div>
+            <h1 class="title-large">Todo iBTK tem duas peças: a chave e o gancho</h1>
+        </div>
+
+        <div class="graphics-area">
+            <svg viewBox="0 0 1920 660" role="img" aria-label="O iBTK encaixa a chave no bolso do ATP e o gancho prende a cisteína 481 da BTK de forma covalente">
+                <!-- BTK -->
+                <g class="pop" data-steps="300">
+                    <circle cx="1440" cy="320" r="235" fill="var(--cyan)"/>
+                    <text x="1500" y="190" class="t-xl" fill="var(--bg-dark)" text-anchor="middle">BTK</text>
+
+                    <rect x="1205" y="265" width="190" height="100" rx="40" fill="#06324a" stroke="#fff" stroke-width="4" stroke-dasharray="14 10"/>
+                    <text x="1310" y="248" font-size="24" fill="#fff" text-anchor="middle">bolso do ATP</text>
+
+                    <rect x="1275" y="415" width="130" height="52" rx="14" fill="var(--green)"/>
+                    <text x="1346" y="450" font-size="25" fill="var(--bg-dark)" text-anchor="middle">Cys481</text>
+                </g>
+
+                <!-- Passos -->
+                <g font-size="30" fill="var(--amber)">
+                    <text x="110" y="130" class="fade" data-steps="2800">1 · a chave encaixa no bolso</text>
+                    <text x="110" y="184" class="fade" data-steps="3400" fill="var(--red-text)">2 · o gancho prende a Cys481</text>
+                </g>
+
+                <!-- Fármaco -->
+                <g class="drug" data-steps="1000:on,1500:dock">
+                    <rect x="760" y="290" width="250" height="80" rx="20" fill="var(--red)"/>
+                    <text x="885" y="344" class="t-lg" fill="#fff" text-anchor="middle">iBTK</text>
+
+                    <!-- chave -->
+                    <rect x="1010" y="305" width="330" height="40" fill="var(--amber)"/>
+                    <rect x="1262" y="345" width="18" height="16" fill="var(--amber)"/>
+                    <rect x="1304" y="345" width="18" height="16" fill="var(--amber)"/>
+                    <text x="1130" y="334" font-size="26" fill="var(--bg-dark)" text-anchor="middle">CHAVE</text>
+
+                    <!-- gancho -->
+                    <path d="M 810 370 V 420 Q 810 441 831 441 H 1258" fill="none" stroke="var(--red)" stroke-width="22" stroke-linecap="round"/>
+                    <circle cx="1262" cy="441" r="12" fill="#fff" stroke="var(--red)" stroke-width="5"/>
+                    <text x="840" y="500" class="t-sm" fill="var(--red-text)">GANCHO (grupo reativo)</text>
+                </g>
+
+                <!-- ligação covalente: anel de destaque + cadeado -->
+                <circle class="pop" data-steps="3300" cx="1270" cy="441" r="26" fill="none" stroke="#fff" stroke-width="5"/>
+                <g class="pop" data-steps="3800">
+                    <path d="M 1428 480 V 464 a 22 22 0 0 1 44 0 V 480" fill="none" stroke="var(--bg-dark)" stroke-width="10" stroke-linecap="round"/>
+                    <rect x="1412" y="478" width="76" height="60" rx="10" fill="var(--red)" stroke="#fff" stroke-width="4"/>
+                    <circle cx="1450" cy="503" r="7" fill="#fff"/>
+                    <rect x="1446" y="505" width="8" height="18" rx="3" fill="#fff"/>
+                </g>
+
+                <text x="960" y="625" class="fade" data-steps="4300" font-size="46" fill="var(--red-text)" text-anchor="middle" letter-spacing="2">LIGAÇÃO COVALENTE · IRREVERSÍVEL</text>
+            </svg>
+        </div>
+
+        <div class="legend" data-steps="4900">O remédio some do sangue · a BTK continua travada</div>
+    </section>
+
+    <div class="footer">Cinase · BTK · Farmacóforo · iBTK</div>
+
+    <div class="controls">
+        <button id="btnPrev" type="button" aria-label="Cena anterior">◀</button>
+        <button id="btnPlay" type="button" aria-label="Pausar">❚❚</button>
+        <button id="btnNext" type="button" aria-label="Próxima cena">▶</button>
+    </div>
+</div>
+
+<script>
+(() => {
+    const SCENE_MS = 6500;           // duração de cada cena
+    const ARROW_DRAW_MS = 900;       // a ponta da seta aparece quando o traço termina
+    const container = document.getElementById('container');
+    const scenes = [...document.querySelectorAll('.scene')];
+    const progress = document.getElementById('progress');
+    const btnPlay = document.getElementById('btnPlay');
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+
+    /* Escala o palco 1920x1080 para caber na janela */
+    function resize() {
+        const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+        container.style.setProperty('--scale', s);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    /* Pontas de seta: criadas a partir do fim de cada traço (marker-end aparece antes do traço ser desenhado) */
+    document.querySelectorAll('path[data-arrow]').forEach(path => {
+        const len = path.getTotalLength();
+        const end = path.getPointAtLength(len);
+        const before = path.getPointAtLength(Math.max(0, len - 2));
+        const angle = Math.atan2(end.y - before.y, end.x - before.x) * 180 / Math.PI;
+        const w = parseFloat(path.getAttribute('stroke-width')) || 10;
+        const k = w * 2.2;
+        const head = document.createElementNS(SVG_NS, 'polygon');
+        head.setAttribute('points', `0,${-k * 0.6} ${k},0 0,${k * 0.6}`);
+        head.setAttribute('transform', `translate(${end.x} ${end.y}) rotate(${angle})`);
+        head.setAttribute('fill', path.getAttribute('stroke'));
+        head.setAttribute('class', 'arrowhead');
+        head.dataset.steps = path.dataset.steps.split(',')
+            .map(tok => {
+                const [ms, cls] = tok.split(':');
+                return `${+ms + ARROW_DRAW_MS}${cls ? ':' + cls : ''}`;
+            }).join(',');
+        path.after(head);
+    });
+
+    /* Linha do tempo: data-steps="ms[:classe],ms[:classe]" (classe padrão: "on") */
+    const timelines = scenes.map(scene => {
+        const items = [];
+        scene.querySelectorAll('[data-steps]').forEach(el => {
+            el.dataset.steps.split(',').forEach(tok => {
+                const [ms, cls = 'on'] = tok.trim().split(':');
+                items.push({ el, at: +ms, cls });
+            });
+        });
+        return items;
+    });
+    const classesOf = timelines.map(items => [...new Set(items.map(i => i.cls))]);
+
+    /* Segmentos de progresso */
+    const bars = scenes.map((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', `Ir para a cena ${i + 1}`);
+        b.innerHTML = '<span><i></i></span>';
+        b.addEventListener('click', () => goTo(i));
+        progress.appendChild(b);
+        return b.querySelector('i');
+    });
+
+    let idx = -1, t = 0, playing = true, last = performance.now();
+
+    function clearScene(i) {
+        timelines[i].forEach(({ el }) => el.classList.remove(...classesOf[i]));
+    }
+
+    function render() {
+        timelines[idx].forEach(({ el, at, cls }) => el.classList.toggle(cls, t >= at));
+        bars.forEach((bar, i) => {
+            const f = i < idx ? 1 : i === idx ? Math.min(t / SCENE_MS, 1) : 0;
+            bar.style.transform = `scaleX(${f})`;
+        });
+    }
+
+    function goTo(i) {
+        const n = (i + scenes.length) % scenes.length;
+        if (idx >= 0) scenes[idx].classList.remove('active');
+        idx = n;
+        t = 0;
+        clearScene(idx);
+        void scenes[idx].offsetWidth;          // garante o estado inicial antes de animar
+        scenes[idx].classList.add('active');
+        render();
+    }
+
+    function setPlaying(p) {
+        playing = p;
+        btnPlay.textContent = p ? '❚❚' : '▶';
+        btnPlay.setAttribute('aria-label', p ? 'Pausar' : 'Reproduzir');
+    }
+
+    function frame(now) {
+        const dt = Math.min(now - last, 100);  // evita salto ao voltar de outra aba
+        last = now;
+        if (playing) {
+            t += dt;
+            if (t >= SCENE_MS) goTo(idx + 1);
+        }
+        render();
+        requestAnimationFrame(frame);
+    }
+
+    document.getElementById('btnPrev').addEventListener('click', () => goTo(idx - 1));
+    document.getElementById('btnNext').addEventListener('click', () => goTo(idx + 1));
+    btnPlay.addEventListener('click', () => setPlaying(!playing));
+    window.addEventListener('keydown', e => {
+        if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+        else if (e.key === 'ArrowRight') goTo(idx + 1);
+        else if (e.key === 'ArrowLeft') goTo(idx - 1);
+    });
+
+    /* Atalho: #3 abre direto na cena 3; #3@5000 posiciona em 5 s (pausado) */
+    window.player = { goTo, seek(ms) { t = ms; render(); }, pause: () => setPlaying(false) };
+    const m = location.hash.match(/^#(\d)(?:@(\d+))?$/);
+    window.addEventListener('load', () => {
+        goTo(m ? +m[1] - 1 : 0);
+        if (m && m[2]) { setPlaying(false); t = +m[2]; render(); }
+        requestAnimationFrame(frame);
+    });
+})();
+</script>
+</body>
+</html>
