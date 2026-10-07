@@ -268,10 +268,19 @@ svg text { user-select: none; font-family: var(--font); font-weight: 700; }
     }
     .scene.active .pulsing.on .pulse-ring { animation: none; }
 }
+
+/* Marca (logos negativos extraídos do template) */
+.brand { position: absolute; z-index: 60; pointer-events: none; }
+.brand-top { top: 26px; right: 56px; height: 64px; }
+.brand-bottom { bottom: 28px; right: 56px; height: 34px; }
+.controls { left: 40px; right: auto !important; }
+.clean .controls, .clean .progress { display: none; }
 </style>
 </head>
 <body>
 <div id="container">
+    <img class="brand brand-top" src="assets/brukinsa-branco.png" alt="Brukinsa (zanubrutinibe) 80 mg cápsulas">
+    <img class="brand brand-bottom" src="assets/beone-branco.png" alt="BeOne">
     <div class="progress" id="progress" role="tablist" aria-label="Cenas"></div>
 
     <!-- CENA 1 · o gancho procura a cisteína -->

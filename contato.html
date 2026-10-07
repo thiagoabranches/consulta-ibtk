@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contato e QR Codes</title>
+<style>
+/* Área de conteúdo do slide "Obrigado!" (fundo branco do template) */
+:root {
+    --navy: #00205B;
+    --teal: #0B4F6C;
+    --cyan: #11A2DA;
+    --cdss: #27A7DB;
+    --magenta: #AB126A;
+    --green: #2DB36F;
+    --grey: #5b6b85;
+    --line: #dbe6f0;
+    --ease-pop: cubic-bezier(.34, 1.56, .64, 1);
+    --font: Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #fff; overflow: hidden; }
+#stage {
+    position: absolute; left: 50%; top: 50%;
+    width: 1752px; height: 650px;
+    transform: translate(-50%, -50%) scale(var(--scale, 1));
+    background: #fff;
+}
+svg { display: block; width: 1752px; height: 650px; }
+svg text { font-family: var(--font); font-weight: 700; user-select: none; }
+
+.pop { opacity: 0; transform: scale(.5); transform-box: fill-box; transform-origin: center; transition: opacity .35s ease, transform .55s var(--ease-pop); }
+.pop.on { opacity: 1; transform: scale(1); }
+.fade { opacity: 0; transition: opacity .35s ease; }
+.fade.on { opacity: 1; }
+.slide-in { opacity: 0; transform: translateX(-40px); transition: opacity .45s ease, transform .6s cubic-bezier(.2, .8, .2, 1); }
+.slide-in.on { opacity: 1; transform: translateX(0); }
+.laser { opacity: 0; transform: translateY(0); }
+.laser.on { opacity: 1; transform: translateY(var(--travel)); transition: transform 1s ease-in-out, opacity .2s; }
+.laser.off { opacity: 0; transition: opacity .3s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pop, .fade, .slide-in, .laser { transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<div id="stage">
+    <svg id="svg" viewBox="0 0 1752 650" role="img" aria-label="QR codes: contato de Thiago Abranches e ferramenta CDSS Farmacoclínico de intercambialidade de iBTK">
+        <!-- cartões dos QR codes -->
+        <rect class="pop" data-steps="0" x="184" y="26" width="392" height="392" rx="26" fill="#fff" stroke="var(--line)" stroke-width="4"/>
+        <rect class="pop" data-steps="150" x="1094" y="26" width="392" height="392" rx="26" fill="#fff" stroke="var(--line)" stroke-width="4"/>
+        <g id="qrLeft"></g>
+        <g id="qrRight"></g>
+
+        <!-- selos de "ok" após a leitura -->
+        <g class="pop" data-steps="2950">
+            <circle cx="592" cy="30" r="24" fill="var(--green)"/>
+            <path d="M 580 30 l 8 8 l 15 -16" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g class="pop" data-steps="3100">
+            <circle cx="1502" cy="30" r="24" fill="var(--green)"/>
+            <path d="M 1490 30 l 8 8 l 15 -16" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+
+        <!-- rótulos -->
+        <g class="pop" data-steps="3200">
+            <rect x="250" y="434" width="260" height="40" rx="20" fill="var(--cyan)"/>
+            <text x="380" y="461" font-size="22" fill="#fff" text-anchor="middle">salve meu contato</text>
+        </g>
+        <g class="pop" data-steps="3350">
+            <rect x="1150" y="434" width="280" height="40" rx="20" fill="var(--magenta)"/>
+            <text x="1290" y="461" font-size="22" fill="#fff" text-anchor="middle">acesse a ferramenta</text>
+        </g>
+
+        <!-- contato -->
+        <g class="slide-in" data-steps="3600">
+            <circle cx="56" cy="524" r="22" fill="var(--cyan)"/>
+            <path d="M 44 515 h 24 v 18 h -24 Z M 44 516 l 12 9 l 12 -9" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
+            <text x="92" y="535" font-size="31"><tspan fill="var(--cyan)">Contato: </tspan><tspan fill="var(--teal)" text-decoration="underline">thabranches@gmail.com</tspan></text>
+        </g>
+        <g class="slide-in" data-steps="3850">
+            <circle cx="56" cy="574" r="22" fill="var(--cyan)"/>
+            <path d="M 48 562 q -2 8 6 18 q 8 8 14 6 l 2 -5 l -6 -4 l -3 3 q -6 -3 -9 -9 l 3 -3 l -3 -7 Z" fill="#fff"/>
+            <text x="92" y="585" font-size="31"><tspan fill="var(--cyan)">Tel: </tspan><tspan fill="var(--teal)">+55 11 94146 9952</tspan></text>
+        </g>
+        <g class="slide-in" data-steps="4100">
+            <circle cx="56" cy="624" r="22" fill="var(--cyan)"/>
+            <text x="56" y="633" font-size="24" fill="#fff" text-anchor="middle">in</text>
+            <text x="92" y="635" font-size="31"><tspan fill="var(--cyan)">LinkedIn: </tspan><tspan fill="var(--teal)">br.linkedin.com/in/thiago-abranches</tspan></text>
+        </g>
+
+        <!-- CDSS -->
+        <g class="slide-in" data-steps="3700">
+            <g id="dna"></g>
+            <text id="cdssTitle" x="1312" y="532" font-size="40" fill="var(--cdss)" text-anchor="middle">CDSS Farmacoclínico:</text>
+        </g>
+        <text class="slide-in" data-steps="3950" x="1290" y="582" font-size="40" fill="var(--cdss)" text-anchor="middle">Intercambialidade de iBTK</text>
+        <text class="slide-in" data-steps="4200" x="1290" y="628" font-size="24" fill="var(--grey)" text-anchor="middle">cdss-farmacoclinica.streamlit.app</text>
+    </svg>
+</div>
+
+<script>
+(() => {
+    const QR = {"vcard": {"n": 57, "rows": ["111111100111000101011001101110110010111010101111001111111", "100000101111011000111100100110011111110000000001001000001", "101110101000110000101001011011100010101111010111001011101", "101110101111100000111111010011110101100110111001001011101", "101110100001101111001010101111101001100010110101001011101", "100000100000100111111111111000111111111001010010001000001", "111111101010101010101010101010101010101010101010101111111", "000000001100011011000011111000101001001111110001100000000", "100000101011011101010010001111110000100001100000011001110", "011010010010110100001011101100110010011001111110101000010", "000010101010111011111101101101010001001100000000001111100", "110100010010110111011100110000001010100011001010110110111", "000100100011110011000110110000101100010011001011110110010", "011101000010100100011100100011110100010111011100110011100", "101010100101000001101101110010000101001100101110000000110", "111100000011001010010110101101001100010100101000110011111", "001011111111111110001100010001010100111100010110001001010", "000100011101000001111001101010100000010011110101100011100", "001010100101100100100111100111011000010000110111100010101", "011000001111110110110010010010101000011000100110011001101", "110001101110000100010110110001110011101010010110101000101", "001111000001101010110111110100111110110001101111101110110", "111101111011110110101100000101100100000011000111011110010", "011100000010101101100010100000110100100010000010101101100", "110011100011001101111100000010011110100011001101101011110", "000111000100010100011110111101110100100011101001100010011", "100111111110011010000111101111100111101011010100111111000", "010110001010111001000111111000100100111001101011100010111", "001110101110001111101110001010110111110000111110101011000", "101110001111000101010111101000110110010101101100100011111", "111011111011101111000010111111111111000111000110111111111", "011000000000011011001010000100001001100010101001011010111", "111101100101000010001000100011010000110001110000111011011", "001110010010010010100111000111111111111000100111110011110", "000010111101110001110010011001111110101011111110000010101", "110000000010100101000001010100110010011000100101101001100", "001010100111000110000101000010001000101010001011011000011", "001110011111010000011001110000110101100111110100011001000", "110101111001001110100101001000101000001010100100110100000", "011101010001100000100000101010000010001110100101001111110", "111010111101000111101001101111010101110100000100101100100", "000110010000100010010001100101101101000101111100001101101", "000111110101011101011000100010111101101111000101101100101", "101100000010000101001101110000000011111011110110010011101", "010010111011100011010001010111011101101100110110101100101", "110000000010001011101010101110000110001001100101000110010", "101001100111111111011111010111011110011010001100010011000", "111110000101100011110010010110101000100010010100010100110", "000000110110001010001101011111101011100010111111111111111", "000000001100010100111111111000110000100001110001100010101", "111111100011010000110110101010101000100110000100101011110", "100000100110001110000000001000100010110001000110100010110", "101110100010101000111101111111110111001000010010111111010", "101110100101011001100110110000011100010101010100001110100", "101110100011110110110100100011101000010111110100101111111", "100000100010110101101100101111110100011000000111000001100", "111111101010000100010010010100010101111001110001011001010"]}, "cdss": {"n": 29, "rows": ["11111110010111000010001111111", "10000010110000101010001000001", "10111010110100010000101011101", "10111010111011111101101011101", "10111010010111001111101011101", "10000010010111100100101000001", "11111110101010101010101111111", "00000000100100001011000000000", "10000010101001100100011001110", "10001001001000110111000010110", "01000110101000011010101100000", "10011000100010101001110011000", "01011011111100001000101000001", "11001100001000111011101110011", "01110010101100011110100101100", "01011101001110101001100010101", "01111111001001110100000101100", "11000000001110111011101110111", "11001010001001110111011111001", "10110100010010001000010110000", "10110010110001010110111110111", "00000000111111110110100011000", "11111110011111110101101011100", "10000010010110110011100010001", "10111010001111110001111111010", "10111010010010011001010001101", "10111010000100110111101111110", "10000010010101100000001101101", "11111110101100011101011010100"]}};
+    const NS = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, parent) {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        parent.appendChild(n);
+        return n;
+    }
+
+    /* QR desenhado em vetor (módulos inteiros = nítido), revelado em faixas diagonais */
+    function drawQR(g, data, x0, y0, mod, color, t0) {
+        const n = data.n, BANDS = 14;
+        const bands = Array.from({ length: BANDS }, (_, b) =>
+            el('g', { class: 'fade', 'data-steps': t0 + b * 90, fill: color }, g));
+        data.rows.forEach((row, r) => {
+            // junta módulos escuros vizinhos da mesma faixa em um retângulo
+            let c = 0;
+            while (c < n) {
+                if (row[c] !== '1') { c++; continue; }
+                const b = Math.floor((r + c) / (2 * n - 1) * BANDS);
+                let c2 = c;
+                while (c2 + 1 < n && row[c2 + 1] === '1' && Math.floor((r + c2 + 1) / (2 * n - 1) * BANDS) === b) c2++;
+                el('rect', { x: x0 + c * mod, y: y0 + r * mod, width: (c2 - c + 1) * mod, height: mod, 'shape-rendering': 'crispEdges' }, bands[b]);
+                c = c2 + 1;
+            }
+        });
+        // laser de leitura
+        const size = n * mod;
+        const laser = el('g', { class: 'laser', 'data-steps': `${t0 + 1500}:on,${t0 + 2550}:off`, style: `--travel:${size}px` }, g);
+        el('rect', { x: x0 - 14, y: y0 - 22, width: size + 28, height: 22, fill: 'rgba(17,162,218,.18)' }, laser);
+        el('rect', { x: x0 - 14, y: y0 - 4, width: size + 28, height: 6, rx: 3, fill: 'var(--cyan)' }, laser);
+    }
+    drawQR(document.getElementById('qrLeft'), QR.vcard, 209, 51, 6, '#0B4F6C', 300);
+    drawQR(document.getElementById('qrRight'), QR.cdss, 1145, 77, 10, '#00205B', 450);
+
+    /* ícone de DNA ao lado do título do CDSS */
+    const t = document.getElementById('cdssTitle');
+    const w = t.getComputedTextLength();
+    const dx = 1312 - w / 2 - 34, dy = 516;
+    const dna = document.getElementById('dna');
+    el('path', { d: `M ${dx - 16} ${dy + 18} C ${dx - 6} ${dy + 4}, ${dx + 6} ${dy - 4}, ${dx + 16} ${dy - 20}`, fill: 'none', stroke: 'var(--magenta)', 'stroke-width': 5, 'stroke-linecap': 'round' }, dna);
+    el('path', { d: `M ${dx - 18} ${dy - 14} C ${dx - 4} ${dy - 14}, ${dx + 4} ${dy + 14}, ${dx + 18} ${dy + 12}`, fill: 'none', stroke: 'var(--cdss)', 'stroke-width': 5, 'stroke-linecap': 'round' }, dna);
+    [[-9, 10, -12, -6], [0, 0, 0, 0], [9, -10, 10, 6]].forEach(([a, b, c, d]) =>
+        el('line', { x1: dx + a - 4, y1: dy + b + 2, x2: dx + c + 4, y2: dy + d - 2, stroke: '#f2a6c8', 'stroke-width': 3 }, dna));
+
+    /* linha do tempo única (data-steps) */
+    const items = [];
+    document.querySelectorAll('[data-steps]').forEach(node =>
+        node.dataset.steps.split(',').forEach(tok => {
+            const [ms, cls = 'on'] = tok.trim().split(':');
+            items.push({ el: node, at: +ms, cls });
+        }));
+    const END = 4800;
+    const stage = document.getElementById('stage');
+    function resize() {
+        stage.style.setProperty('--scale', Math.min(innerWidth / 1752, innerHeight / 650));
+    }
+    addEventListener('resize', resize);
+    resize();
+
+    let t0 = null;
+    window.player = { done: false };
+    function frame(now) {
+        if (t0 === null) t0 = now;
+        const t = now - t0;
+        items.forEach(({ el, at, cls }) => el.classList.toggle(cls, t >= at));
+        if (t >= END) { window.player.done = true; return; }   // para no estado final (QR legível)
+        requestAnimationFrame(frame);
+    }
+    addEventListener('load', () => requestAnimationFrame(frame));
+})();
+</script>
+</body>
+</html>
