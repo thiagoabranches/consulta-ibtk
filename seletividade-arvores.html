@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seletividade dos iBTKs</title>
+<style>
+:root {
+    --navy: #00205B;
+    --navy-2: #0a2f72;
+    --navy-3: #00163f;
+    --cyan: #3FA9F5;
+    --gold: #F6B93B;
+    --red: #E63946;
+    --btk: #3b6cff;
+    --green: #3CCB7F;
+    --blue-light: #BCC7E5;
+    --blue-grey: #8FA3CF;
+    --ease-pop: cubic-bezier(.34, 1.56, .64, 1);
+    --font: Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; }
+body { background: var(--navy); overflow: hidden; font-family: var(--font); color: var(--blue-light); -webkit-font-smoothing: antialiased; }
+
+#container {
+    position: absolute; left: 50%; top: 50%;
+    width: 1920px; height: 1080px;
+    transform: translate(-50%, -50%) scale(var(--scale, 1));
+    background: var(--navy);
+    overflow: hidden;
+}
+
+.brand { position: absolute; z-index: 60; pointer-events: none; }
+.brand-top { top: 26px; right: 56px; height: 64px; }
+.brand-bottom { bottom: 28px; right: 56px; height: 34px; }
+
+.header-titles { position: absolute; top: 64px; left: 100px; width: 1500px; }
+.title-small { font-size: 30px; font-weight: 700; color: var(--cyan); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; }
+.title-large { font-size: 54px; font-weight: 700; line-height: 1.15; color: #fff; }
+
+.graphics-area { position: absolute; top: 200px; left: 0; width: 1920px; height: 680px; }
+.graphics-area svg { display: block; width: 1920px; height: 680px; overflow: visible; }
+
+.conclusion {
+    position: absolute; bottom: 92px; left: 50%;
+    transform: translate(-50%, 24px);
+    background: var(--navy-3); border: 2px solid var(--cyan);
+    padding: 14px 40px; border-radius: 50px;
+    font-size: 36px; font-weight: 700; color: #fff;
+    white-space: nowrap; opacity: 0;
+    transition: opacity .5s ease, transform .6s var(--ease-pop);
+}
+.conclusion.on { opacity: 1; transform: translate(-50%, 0); }
+.conclusion .hl { color: var(--gold); }
+
+.footer { position: absolute; bottom: 26px; width: 100%; text-align: center; font-size: 22px; color: var(--blue-grey); }
+
+/* ---------- Animações (data-steps) ---------- */
+.pop { opacity: 0; transform: scale(.3); transform-box: fill-box; transform-origin: center; transition: opacity .35s ease, transform .55s var(--ease-pop); }
+.pop.on { opacity: 1; transform: scale(1); }
+.fade { opacity: 0; transition: opacity .5s ease-in-out; }
+.fade.on { opacity: 1; }
+.dimmable { transition: opacity .7s ease; }
+.dimmable.on { opacity: .22; }
+.pulse-ring { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.pulsing.on .pulse-ring { animation: pulseAnim 1.8s 3 cubic-bezier(.215, .61, .355, 1); }
+.pulse-ring:nth-child(2) { animation-delay: .9s !important; }
+@keyframes pulseAnim { 0% { transform: scale(.8); opacity: 1; } 100% { transform: scale(2.6); opacity: 0; } }
+
+svg text { user-select: none; font-family: var(--font); font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pop, .fade, .dimmable, .conclusion { transition-duration: .01ms !important; }
+    .pulsing.on .pulse-ring { animation: none; }
+}
+</style>
+</head>
+<body>
+<div id="container">
+    <img class="brand brand-top" src="assets/brukinsa-branco.png" alt="Brukinsa (zanubrutinibe) 80 mg cápsulas">
+    <img class="brand brand-bottom" src="assets/beone-branco.png" alt="BeOne">
+
+    <div class="header-titles">
+        <div class="title-small">Seletividade dos iBTKs · mapas de cinases</div>
+        <h1 class="title-large">Seletividade de BRUKINSA® (zanubrutinibe)</h1>
+    </div>
+
+    <div class="graphics-area">
+        <svg id="kinome" viewBox="0 0 1920 680" role="img" aria-label="Quatro árvores de cinases com a BTK em azul e as cinases inibidas fora do alvo em vermelho: zanubrutinibe tem menos bolinhas vermelhas que ibrutinibe, acalabrutinibe e M27"></svg>
+    </div>
+
+    <div class="conclusion" data-steps="13000"><span class="hl">Acredita-se</span> que os EAs associados aos iBTKs sejam devidos a efeitos <span class="hl">off-target</span></div>
+
+    <div class="footer">Modelo ilustrativo baseado em Nixon S et al. Curr Oncol. 2023;30(4):4222-4245 · EAs = eventos adversos</div>
+</div>
+
+<script>
+(() => {
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, parent, text) {
+        const n = document.createElementNS(SVG_NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        if (text != null) n.textContent = text;
+        if (parent) parent.appendChild(n);
+        return n;
+    }
+
+    /* Gerador pseudoaleatório com semente: as 4 árvores ficam idênticas e estáveis */
+    function rng(seed) {
+        return () => {
+            seed = (seed + 0x6D2B79F5) | 0;
+            let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    /* Grupos do quinoma humano, na disposição do mapa de referência */
+    const GROUPS = [
+        { k: 'TK',   a: -128, c: '#d295b3' },
+        { k: 'TKL',  a: -66,  c: '#c3a3c3' },
+        { k: 'STE',  a: -20,  c: '#c3c983' },
+        { k: 'CK1',  a: 14,   c: '#93bed2' },
+        { k: 'AGC',  a: 46,   c: '#7fc4a5' },
+        { k: 'CAMK', a: 96,   c: '#aba5dc' },
+        { k: 'CMGC', a: 168,  c: '#d6b97c' },
+        { k: '',     a: 218,  c: '#7f8a99' },
+    ];
+    const R = 165;
+    const LEN = [0.36, 0.25, 0.19, 0.15, 0.11].map(f => f * R);
+    const SPREAD = [0.42, 0.34, 0.27, 0.22];
+    const WIDTH = [5, 3.2, 2.2, 1.5, 1.1];
+
+    const model = GROUPS.map((g, gi) => {
+        const r = rng(gi * 97 + 13);
+        const segs = [[], [], [], [], []];
+        const leaves = [];
+        const a0 = g.a * Math.PI / 180;
+        (function br(x, y, a, d) {
+            const len = LEN[d] * (0.85 + 0.3 * r());
+            const x2 = x + Math.cos(a) * len, y2 = y + Math.sin(a) * len;
+            segs[d].push(`M${x.toFixed(1)} ${y.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}`);
+            if (d === 4) { leaves.push({ x: x2, y: y2, a }); return; }
+            const n = d === 0 ? 3 : (r() < 0.55 ? 2 : 3);
+            for (let i = 0; i < n; i++) {
+                const t = i / (n - 1) - 0.5;
+                br(x2, y2, a + t * 2 * SPREAD[d] * (0.75 + 0.5 * r()), d + 1);
+            }
+        })(Math.cos(a0) * 6, Math.sin(a0) * 6, a0, 0);
+        leaves.sort((p, q) => p.a - q.a);
+        return { ...g, segs, leaves };
+    });
+    const leaf = (group, frac) => {
+        const L = model.find(m => m.k === group).leaves;
+        return L[Math.round(frac * (L.length - 1))];
+    };
+
+    /* Bolinhas fora do alvo: [grupo, posição no grupo, faixa de inibição]
+       1 = 95–100% · 2 = 90–95% · 3 = 75–90% · 4 = 50–75%  (ilustrativo, a partir do slide de referência) */
+    const DRUGS = [
+        { name: 'zanubrutinibe', t: 3400, dots: [['TK', .08, 1], ['TK', .55, 1], ['TK', .4, 4]] },
+        { name: 'ibrutinibe', t: 5000, dots: [['TK', .02, 1], ['TK', .1, 1], ['TK', .32, 2], ['TK', .42, 1], ['TK', .5, 2], ['TK', .62, 1],
+                                              ['TK', .72, 3], ['TK', .85, 2], ['TK', .95, 1], ['TKL', .12, 2]] },
+        { name: 'acalabrutinibe', t: 6800, dots: [['TK', .04, 3], ['TK', .45, 3], ['TK', .7, 2], ['TK', .9, 4], ['TKL', .25, 3],
+                                                  ['TKL', .45, 4], ['TKL', .65, 4], ['CMGC', .75, 3]] },
+        { name: 'M27*', sub: '(metabólito ativo circulante do acalabrutinibe)', t: 8500,
+          dots: [['TK', .03, 2], ['TK', .12, 3], ['TK', .32, 1], ['TK', .42, 3], ['TK', .55, 1], ['TK', .68, 2], ['TK', .82, 3],
+                 ['TK', .95, 3], ['TKL', .2, 3], ['TKL', .38, 3], ['TKL', .6, 4], ['STE', .5, 3], ['CK1', .3, 3],
+                 ['CK1', .75, 4], ['AGC', .6, 3], ['CMGC', .3, 2], ['CMGC', .55, 2]] },
+    ];
+    const DOT_R = { 1: 11, 2: 8.5, 3: 6.5, 4: 4.8 };
+    const BTK_FRAC = 0.22;
+    const CENTERS = [260, 726, 1192, 1658];
+    const CY = 320;
+    const HL = 11500;   // destaque do zanubrutinibe
+
+    const svg = document.getElementById('kinome');
+    el('rect', { class: 'fade', 'data-steps': HL, x: 40, y: 8, width: 440, height: 572, rx: 28, fill: 'rgba(60,203,127,.07)', stroke: 'var(--green)', 'stroke-width': 5 }, svg);
+    el('text', { class: 'fade', 'data-steps': HL + 300, x: 260, y: 556, 'font-size': 26, fill: 'var(--green)', 'text-anchor': 'middle' }, svg, 'menos bolinhas fora da BTK');
+
+    DRUGS.forEach((drug, di) => {
+        const ox = CENTERS[di];
+        const t0 = 300 + di * 250;
+        const wrap = el('g', di === 0 ? {} : { class: 'dimmable', 'data-steps': HL }, svg);
+
+        el('text', { class: 'fade', 'data-steps': t0, x: ox, y: 58, 'font-size': 32, fill: '#fff', 'text-anchor': 'middle' }, wrap, drug.name);
+        if (drug.sub) el('text', { class: 'fade', 'data-steps': t0, x: ox, y: 90, 'font-size': 18, fill: 'var(--blue-grey)', 'text-anchor': 'middle' }, wrap, drug.sub);
+
+        const tree = el('g', { transform: `translate(${ox} ${CY})` }, wrap);
+        // ramos "crescem" do centro para fora, profundidade por profundidade
+        for (let depth = 0; depth < 5; depth++) {
+            const g = el('g', { class: 'fade', 'data-steps': t0 + depth * 160 }, tree);
+            model.forEach(m => el('path', {
+                d: m.segs[depth].join(''), fill: 'none', stroke: m.c, 'stroke-width': WIDTH[depth],
+                'stroke-linecap': 'round', opacity: depth === 0 ? .95 : .85,
+            }, g));
+        }
+        const labels = el('g', { class: 'fade', 'data-steps': t0 + 900 }, tree);
+        model.forEach(m => {
+            if (!m.k) return;
+            const a = m.a * Math.PI / 180;
+            el('text', { x: Math.cos(a) * (R + 32), y: Math.sin(a) * (R + 32) + 6, 'font-size': 17, fill: m.c, 'text-anchor': 'middle' }, labels, m.k);
+        });
+
+        // BTK (azul) com pulso
+        const b = leaf('TK', BTK_FRAC);
+        const pulse = el('g', { class: 'pulsing', 'data-steps': 2300, fill: 'none', stroke: 'var(--btk)', 'stroke-width': 3 }, tree);
+        el('circle', { class: 'pulse-ring', cx: b.x, cy: b.y, r: 12 }, pulse);
+        el('circle', { class: 'pulse-ring', cx: b.x, cy: b.y, r: 12 }, pulse);
+        el('circle', { class: 'pop', 'data-steps': 2200 + di * 120, cx: b.x, cy: b.y, r: 12, fill: 'var(--btk)', stroke: '#fff', 'stroke-width': 2.5 }, tree);
+
+        // fora do alvo (vermelho), uma a uma
+        drug.dots.forEach(([g, f, s], j) => {
+            const p = leaf(g, f);
+            el('circle', { class: 'pop', 'data-steps': drug.t + j * 110, cx: p.x, cy: p.y, r: DOT_R[s], fill: 'var(--red)', stroke: '#fff', 'stroke-width': 1.4 }, tree);
+        });
+    });
+
+    // legenda (linha única, abaixo das árvores)
+    const lg = el('g', { class: 'fade', 'data-steps': 2600 }, svg);
+    let x = 430;
+    const ly = 640;
+    el('circle', { cx: x, cy: ly - 7, r: 11, fill: 'var(--btk)', stroke: '#fff', 'stroke-width': 2.5 }, lg);
+    el('text', { x: x + 20, y: ly, 'font-size': 22, fill: '#fff' }, lg, 'BTK');
+    x += 100;
+    el('text', { x, y: ly, 'font-size': 22, fill: 'var(--blue-light)' }, lg, 'Cinases fora do alvo:');
+    x += 262;
+    [[1, '95–100%'], [2, '90–95%'], [3, '75–90%'], [4, '50–75%']].forEach(([s, label]) => {
+        el('circle', { cx: x, cy: ly - 7, r: DOT_R[s], fill: 'var(--red)', stroke: '#fff', 'stroke-width': 1.4 }, lg);
+        el('text', { x: x + 18, y: ly, 'font-size': 22, fill: 'var(--blue-light)' }, lg, label);
+        x += 135;
+    });
+    el('text', { x: x + 4, y: ly, 'font-size': 22, fill: 'var(--blue-grey)' }, lg, 'de inibição');
+
+    /* Linha do tempo única; para no estado final */
+    const items = [];
+    document.querySelectorAll('[data-steps]').forEach(node =>
+        node.dataset.steps.split(',').forEach(tok => {
+            const [ms, cls = 'on'] = tok.trim().split(':');
+            items.push({ el: node, at: +ms, cls });
+        }));
+    const END = 15000;
+    const container = document.getElementById('container');
+    function resize() { container.style.setProperty('--scale', Math.min(innerWidth / 1920, innerHeight / 1080)); }
+    addEventListener('resize', resize);
+    resize();
+
+    window.player = { done: false };
+    let t0 = null;
+    function frame(now) {
+        if (t0 === null) t0 = now;
+        const t = now - t0;
+        items.forEach(({ el, at, cls }) => el.classList.toggle(cls, t >= at));
+        if (t >= END) { window.player.done = true; return; }
+        requestAnimationFrame(frame);
+    }
+    addEventListener('load', () => requestAnimationFrame(frame));
+})();
+</script>
+</body>
+</html>
