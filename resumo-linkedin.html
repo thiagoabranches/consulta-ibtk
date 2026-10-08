@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resumo da Aula</title>
+<style>
+:root {
+    --navy: #00205B;
+    --navy-2: #0a2f72;
+    --navy-3: #00163f;
+    --cyan: #3FA9F5;
+    --gold: #F6B93B;
+    --magenta: #E0389A;
+    --green: #3CCB7F;
+    --red: #E63946;
+    --grey: #8FA3CF;
+    --blue-light: #BCC7E5;
+    --ease-pop: cubic-bezier(.34, 1.56, .64, 1);
+    --font: Arial, 'Helvetica Neue', Helvetica, 'Liberation Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; }
+body { background: var(--navy); overflow: hidden; font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+/* Palco quadrado 1080×1080 (formato do feed do LinkedIn) */
+#stage {
+    position: absolute; left: 50%; top: 50%;
+    width: 1080px; height: 1080px;
+    transform: translate(-50%, -50%) scale(var(--scale, 1));
+    background: var(--navy);
+    overflow: hidden;
+}
+.scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .45s ease-in-out, visibility .45s; }
+.scene.active { opacity: 1; visibility: visible; }
+.scene svg { display: block; width: 1080px; height: 1080px; }
+svg text { font-family: var(--font); font-weight: 700; user-select: none; }
+
+.footer {
+    position: absolute; left: 60px; right: 60px; bottom: 26px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 22px; font-weight: 700; color: var(--grey);
+}
+.dots { display: flex; gap: 8px; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(188, 199, 229, .25); transition: background .3s, width .3s; }
+.dots i.cur { background: var(--cyan); width: 30px; border-radius: 6px; }
+.dots i.past { background: rgba(63, 169, 245, .6); }
+
+/* Animações (data-steps) */
+.pop { opacity: 0; transform: scale(.4); transform-box: fill-box; transform-origin: center; transition: opacity .35s ease, transform .55s var(--ease-pop); }
+.pop.on { opacity: 1; transform: scale(1); }
+.fade { opacity: 0; transition: opacity .5s ease-in-out; }
+.fade.on { opacity: 1; }
+.rise { transform: scaleY(0); transform-box: fill-box; transform-origin: 50% 100%; transition: transform .8s cubic-bezier(.2, .8, .2, 1); }
+.rise.on { transform: scaleY(1); }
+.drop { transform: scaleY(0); transform-box: fill-box; transform-origin: 50% 0%; transition: transform .8s cubic-bezier(.2, .8, .2, 1); }
+.drop.on { transform: scaleY(1); }
+.grow { transform: scaleX(0); transform-box: fill-box; transform-origin: 0% 50%; transition: transform .9s cubic-bezier(.2, .8, .2, 1); }
+.grow.on { transform: scaleX(1); }
+.signal { stroke-dasharray: 1 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.2s ease-in-out; }
+.signal.on { stroke-dashoffset: 0; }
+.ring { stroke-dasharray: 0 1; transition: stroke-dasharray 1.4s cubic-bezier(.3, .1, .2, 1); }
+.ring.on { stroke-dasharray: var(--v) 1; }
+.hot { transition: fill .5s, stroke .5s; }
+.hot.on { fill: #5c1b2c; stroke: var(--red); }
+
+@media (prefers-reduced-motion: reduce) {
+    .pop, .fade, .rise, .drop, .grow, .signal, .ring, .scene, .hot { transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 1 · CAPA -->
+<section class="scene" data-dur="5500">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="Resumo da aula: zanubrutinibe na leucemia linfocítica crônica pela ótica da farmácia clínica, por Thiago Abranches">
+    <g class="pop" data-steps="0">
+        <circle cx="540" cy="300" r="120" fill="var(--cyan)"/>
+        <text x="540" y="322" font-size="64" fill="var(--navy)" text-anchor="middle">BTK</text>
+        <rect x="455" y="370" width="170" height="50" rx="14" fill="var(--gold)"/>
+        <text x="540" y="405" font-size="28" fill="var(--navy)" text-anchor="middle">Cys481</text>
+    </g>
+    <text class="fade" data-steps="500" x="540" y="520" font-size="30" fill="var(--cyan)" text-anchor="middle" letter-spacing="4">RESUMO DA AULA</text>
+    <text class="fade" data-steps="800" x="540" y="610" font-size="74" fill="#fff" text-anchor="middle">Zanubrutinibe na LLC</text>
+    <text class="fade" data-steps="1200" x="540" y="672" font-size="38" fill="var(--gold)" text-anchor="middle">pela ótica da farmácia clínica</text>
+    <g class="pop" data-steps="1900">
+        <rect x="290" y="730" width="500" height="64" rx="32" fill="var(--navy-3)" stroke="var(--cyan)" stroke-width="3"/>
+        <text x="540" y="772" font-size="28" fill="#fff" text-anchor="middle">10 pontos-chave da aula</text>
+    </g>
+    <text class="fade" data-steps="2400" x="540" y="880" font-size="36" fill="#fff" text-anchor="middle">Thiago Abranches</text>
+    <text class="fade" data-steps="2400" x="540" y="922" font-size="26" fill="var(--grey)" text-anchor="middle">Farmacêutico clínico · CRF-SP 91811</text>
+</svg>
+</section>
+
+<!-- 2 · SELETIVIDADE -->
+<section class="scene" data-dur="8000">
+<svg viewBox="0 0 1080 1080" id="sel" role="img" aria-label="Razão de IC50 zanubrutinibe para ibrutinibe nas cinases fora do alvo: EGFR 6 vezes, ITK 33, JAK3 51, HER2 70, TEC 2,4">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">01 · SELETIVIDADE</text>
+    <text x="70" y="170" font-size="46" fill="#fff">Acertar a BTK, poupar as primas</text>
+    <text class="fade" data-steps="3800" x="540" y="905" font-size="24" fill="var(--blue-light)" text-anchor="middle">×N = quantas vezes mais zanubrutinibe que ibrutinibe é preciso</text>
+    <text class="fade" data-steps="3800" x="540" y="937" font-size="24" fill="var(--blue-light)" text-anchor="middle">para inibir a cinase (razão de IC50) · quanto maior, mais seletivo</text>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Tam CS et al. Blood 2019;134:851-9 · Tam CS et al. Expert Rev Clin Pharmacol 2021;14:1329-44</text>
+</svg>
+</section>
+
+<!-- 3 · COBERTURA -->
+<section class="scene" data-dur="8000">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="Concentração livre no vale dividida pelo IC50 da BTK: zanubrutinibe cerca de 8 vezes, ibrutinibe cerca de um oitavo, acalabrutinibe cerca de um quinto">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">02 · FARMACOCINÉTICA</text>
+    <text x="70" y="170" font-size="46" fill="#fff">BTK coberta até a próxima dose</text>
+    <text class="fade" data-steps="0" x="540" y="250" font-size="26" fill="var(--blue-light)" text-anchor="middle">concentração livre no vale ÷ IC50 da BTK</text>
+
+    <line class="fade" data-steps="300" x1="250" y1="560" x2="960" y2="560" stroke="#fff" stroke-width="4" stroke-dasharray="14 10"/>
+    <text class="fade" data-steps="300" x="236" y="552" font-size="22" fill="#fff" text-anchor="end">limiar</text>
+    <text class="fade" data-steps="300" x="236" y="580" font-size="22" fill="#fff" text-anchor="end">1×</text>
+
+    <rect class="rise" data-steps="900" x="290" y="380" width="160" height="180" rx="10" fill="var(--cyan)"/>
+    <text class="pop" data-steps="1600" x="370" y="360" font-size="46" fill="var(--cyan)" text-anchor="middle">~8×</text>
+    <rect class="drop" data-steps="1500" x="520" y="560" width="160" height="180" rx="10" fill="var(--grey)"/>
+    <text class="pop" data-steps="2200" x="600" y="790" font-size="46" fill="var(--grey)" text-anchor="middle">~1/8×</text>
+    <rect class="drop" data-steps="2100" x="750" y="560" width="160" height="140" rx="10" fill="var(--magenta)"/>
+    <text class="pop" data-steps="2800" x="830" y="750" font-size="46" fill="var(--magenta)" text-anchor="middle">~1/5×</text>
+
+    <g class="fade" data-steps="600" font-size="26" fill="#fff" text-anchor="middle">
+        <text x="370" y="600">zanubrutinibe</text>
+        <text x="600" y="530">ibrutinibe</text>
+        <text x="830" y="530">acalabrutinibe</text>
+    </g>
+    <g class="fade" data-steps="600" font-size="20" fill="var(--grey)" text-anchor="middle">
+        <text x="370" y="630">160 mg 2×/dia</text>
+        <text x="600" y="500">560 mg 1×/dia</text>
+        <text x="830" y="500">100 mg 2×/dia</text>
+    </g>
+
+    <text class="fade" data-steps="3600" x="540" y="870" font-size="30" fill="#fff" text-anchor="middle">Acima de 1×: a BTK segue inibida mesmo no vale</text>
+    <text class="fade" data-steps="4200" x="540" y="915" font-size="22" fill="var(--gold)" text-anchor="middle">dados de 3 análises separadas · comparação entre estudos tem limitações</text>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Tam CS et al. Expert Rev Clin Pharmacol 2021;14:1329-44</text>
+</svg>
+</section>
+
+<!-- 4 · SEQUOIA -->
+<section class="scene" data-dur="7000">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="SEQUOIA, primeira linha: após 6 anos, 74% sem progressão com zanubrutinibe; redução de 72% no risco de progressão ou morte versus bendamustina e rituximabe">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">03 · 1ª LINHA · SEQUOIA</text>
+    <text x="70" y="170" font-size="46" fill="#fff">6 anos depois, 74% sem progressão</text>
+
+    <circle cx="320" cy="530" r="180" fill="none" stroke="var(--navy-2)" stroke-width="44"/>
+    <circle class="ring" data-steps="400" cx="320" cy="530" r="180" fill="none" stroke="var(--cyan)" stroke-width="44" pathLength="1" transform="rotate(-90 320 530)" style="--v:.74"/>
+    <text class="pop" data-steps="1200" x="320" y="555" font-size="92" fill="#fff" text-anchor="middle">74%</text>
+    <text class="fade" data-steps="1500" x="320" y="770" font-size="24" fill="var(--blue-light)" text-anchor="middle">sem progressão em 6 anos</text>
+    <text class="fade" data-steps="1500" x="320" y="802" font-size="20" fill="var(--grey)" text-anchor="middle">LLC sem tratamento prévio, sem del(17p)</text>
+
+    <g class="pop" data-steps="2400">
+        <text x="780" y="470" font-size="110" fill="var(--gold)" text-anchor="middle">−72%</text>
+        <text x="780" y="525" font-size="26" fill="#fff" text-anchor="middle">no risco de progressão</text>
+        <text x="780" y="560" font-size="26" fill="#fff" text-anchor="middle">ou morte vs. quimioimuno-</text>
+        <text x="780" y="595" font-size="26" fill="#fff" text-anchor="middle">terapia (bendamustina + R)</text>
+        <text x="780" y="650" font-size="22" fill="var(--grey)" text-anchor="middle">HR 0,28 · mediana 72,8 meses</text>
+    </g>
+    <text class="fade" data-steps="3400" x="540" y="900" font-size="30" fill="#fff" text-anchor="middle">Controle prolongado da doença em idosos</text>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Tam C et al. ASH 2025, pôster 2129 · Shadman M et al. J Clin Oncol 2025;43(7):780-7</text>
+</svg>
+</section>
+
+<!-- 5 · ALPINE eficácia -->
+<section class="scene" data-dur="7500">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="ALPINE: único estudo head-to-head de superioridade entre iBTKs; sobrevida livre de progressão em 39 meses de 64,9% com zanubrutinibe versus 54,8% com ibrutinibe">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">04 · RECIDIVADA/REFRATÁRIA · ALPINE</text>
+    <text x="70" y="170" font-size="46" fill="#fff">O único head-to-head de</text>
+    <text x="70" y="226" font-size="46" fill="#fff">superioridade entre iBTKs</text>
+
+    <g class="fade" data-steps="0">
+        <line x1="140" y1="300" x2="140" y2="760" stroke="var(--blue-light)" stroke-width="3"/>
+        <line x1="140" y1="760" x2="780" y2="760" stroke="var(--blue-light)" stroke-width="3"/>
+        <text x="125" y="310" font-size="20" fill="var(--grey)" text-anchor="end">100%</text>
+        <text x="125" y="535" font-size="20" fill="var(--grey)" text-anchor="end">50%</text>
+        <text x="460" y="800" font-size="20" fill="var(--grey)" text-anchor="middle">meses desde a randomização</text>
+        <text x="740" y="790" font-size="20" fill="var(--grey)" text-anchor="middle">39</text>
+    </g>
+    <path class="signal" data-steps="500" pathLength="1" d="M 140 300 C 260 320, 340 340, 420 365 S 620 410, 740 438" fill="none" stroke="var(--cyan)" stroke-width="7" stroke-linecap="round"/>
+    <path class="signal" data-steps="700" pathLength="1" d="M 140 300 C 250 330, 330 370, 420 400 S 620 470, 740 484" fill="none" stroke="var(--grey)" stroke-width="7" stroke-linecap="round"/>
+    <g class="pop" data-steps="1900">
+        <text x="760" y="440" font-size="40" fill="var(--cyan)">64,9%</text>
+        <text x="760" y="468" font-size="20" fill="var(--cyan)">zanubrutinibe</text>
+    </g>
+    <g class="pop" data-steps="2200">
+        <text x="760" y="520" font-size="40" fill="var(--grey)">54,8%</text>
+        <text x="760" y="548" font-size="20" fill="var(--grey)">ibrutinibe</text>
+    </g>
+    <text class="fade" data-steps="1200" x="460" y="740" font-size="20" fill="var(--grey)" text-anchor="middle">sobrevida livre de progressão (curvas esquemáticas)</text>
+
+    <g class="pop" data-steps="3000">
+        <rect x="190" y="830" width="700" height="80" rx="40" fill="var(--gold)"/>
+        <text x="540" y="882" font-size="34" fill="var(--navy)" text-anchor="middle">−32% no risco de progressão ou morte</text>
+    </g>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Brown JR et al. N Engl J Med 2023;388:319-32 · corte de dados 15/set/2023</text>
+</svg>
+</section>
+
+<!-- 6 · ALPINE segurança -->
+<section class="scene" data-dur="8000">
+<svg id="alpineSafety" viewBox="0 0 1080 1080" role="img" aria-label="ALPINE, segurança, zanubrutinibe versus ibrutinibe: fibrilação ou flutter atrial 6,8% vs 16,4%; descontinuação por evento adverso 19,8% vs 26,2%; hospitalização 46,3% vs 55,6%; eventos adversos grau 3 a 5 72,5% vs 77,5%">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">05 · SEGURANÇA · ALPINE</text>
+    <text x="70" y="170" font-size="46" fill="#fff">Menos fibrilação atrial,</text>
+    <text x="70" y="226" font-size="46" fill="#fff">menos descontinuação</text>
+    <g class="fade" data-steps="0" font-size="24">
+        <rect x="620" y="262" width="24" height="24" rx="5" fill="var(--cyan)"/><text x="654" y="282" fill="#fff">zanubrutinibe</text>
+        <rect x="820" y="262" width="24" height="24" rx="5" fill="var(--grey)"/><text x="854" y="282" fill="#fff">ibrutinibe</text>
+    </g>
+    <text class="fade" data-steps="5000" x="540" y="925" font-size="26" fill="#fff" text-anchor="middle">Descontinuação por evento cardíaco: 1 paciente vs 14</text>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Brown JR et al. N Engl J Med 2023;388:319-32 · n=324 por braço · corte 15/set/2023</text>
+</svg>
+</section>
+
+<!-- 7 · MAIC -->
+<section class="scene" data-dur="8000">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="Comparação indireta ajustada (MAIC) com acalabrutinibe: SLP HR 0,68 significativo; sobrevida global HR 0,60 tendência sem significância; resposta completa OR 2,90 significativo">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">06 · VS ACALABRUTINIBE · MAIC</text>
+    <text x="70" y="170" font-size="46" fill="#fff">Sem head-to-head: comparação</text>
+    <text x="70" y="226" font-size="46" fill="#fff">indireta ajustada</text>
+
+    <g class="pop" data-steps="400">
+        <rect x="70" y="290" width="300" height="330" rx="24" fill="var(--navy-2)" stroke="var(--green)" stroke-width="4"/>
+        <text x="220" y="345" font-size="28" fill="#fff" text-anchor="middle">Progressão</text>
+        <text x="220" y="430" font-size="62" fill="var(--green)" text-anchor="middle">HR 0,68</text>
+        <text x="220" y="480" font-size="22" fill="var(--blue-light)" text-anchor="middle">IC95% 0,46–0,99</text>
+        <rect x="110" y="530" width="220" height="50" rx="25" fill="var(--green)"/>
+        <text x="220" y="563" font-size="22" fill="var(--navy)" text-anchor="middle">significativo</text>
+    </g>
+    <g class="pop" data-steps="1100">
+        <rect x="390" y="290" width="300" height="330" rx="24" fill="var(--navy-2)" stroke="var(--gold)" stroke-width="4"/>
+        <text x="540" y="345" font-size="28" fill="#fff" text-anchor="middle">Sobrevida global</text>
+        <text x="540" y="430" font-size="62" fill="var(--gold)" text-anchor="middle">HR 0,60</text>
+        <text x="540" y="480" font-size="22" fill="var(--blue-light)" text-anchor="middle">IC95% 0,35–1,02</text>
+        <rect x="430" y="530" width="220" height="50" rx="25" fill="var(--gold)"/>
+        <text x="540" y="563" font-size="22" fill="var(--navy)" text-anchor="middle">tendência (n.s.)</text>
+    </g>
+    <g class="pop" data-steps="1800">
+        <rect x="710" y="290" width="300" height="330" rx="24" fill="var(--navy-2)" stroke="var(--green)" stroke-width="4"/>
+        <text x="860" y="345" font-size="28" fill="#fff" text-anchor="middle">Resposta completa</text>
+        <text x="860" y="430" font-size="62" fill="var(--green)" text-anchor="middle">OR 2,90</text>
+        <text x="860" y="480" font-size="22" fill="var(--blue-light)" text-anchor="middle">IC95% 1,13–7,43</text>
+        <rect x="750" y="530" width="220" height="50" rx="25" fill="var(--green)"/>
+        <text x="860" y="563" font-size="22" fill="var(--navy)" text-anchor="middle">significativo</text>
+    </g>
+    <text class="fade" data-steps="2500" x="540" y="690" font-size="26" fill="#fff" text-anchor="middle">ALPINE (dados individuais) × ASCEND (médias publicadas)</text>
+    <text class="fade" data-steps="2500" x="540" y="728" font-size="22" fill="var(--blue-light)" text-anchor="middle">pacientes reponderados até as populações ficarem parecidas</text>
+
+    <g class="pop" data-steps="3400">
+        <rect x="120" y="800" width="840" height="110" rx="24" fill="var(--navy-3)" stroke="var(--magenta)" stroke-width="3"/>
+        <text x="540" y="845" font-size="28" fill="#fff" text-anchor="middle">MAIC não ancorado: <tspan fill="var(--gold)">gera hipótese</tspan>,</text>
+        <text x="540" y="885" font-size="28" fill="#fff" text-anchor="middle">não substitui um estudo head-to-head</text>
+    </g>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Shadman M et al. Ther Adv Med Oncol 2025;17:17588359251340554</text>
+</svg>
+</section>
+
+<!-- 8 · VIDA REAL -->
+<section class="scene" data-dur="7000">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="Vida real, primeira linha: persistência em 24 meses de 74,7% com zanubrutinibe, 66,3% com acalabrutinibe e 58,7% com ibrutinibe">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">07 · VIDA REAL · 1ª LINHA</text>
+    <text x="70" y="170" font-size="46" fill="#fff">Quem segue no tratamento</text>
+    <text x="70" y="226" font-size="46" fill="#fff">após 24 meses?</text>
+
+    <line class="fade" data-steps="0" x1="140" y1="760" x2="940" y2="760" stroke="var(--blue-light)" stroke-width="3"/>
+    <rect class="rise" data-steps="400" x="190" y="312" width="180" height="448" rx="12" fill="var(--cyan)"/>
+    <rect class="rise" data-steps="800" x="450" y="362" width="180" height="398" rx="12" fill="var(--magenta)"/>
+    <rect class="rise" data-steps="1200" x="710" y="408" width="180" height="352" rx="12" fill="var(--grey)"/>
+    <g class="pop" data-steps="1300"><text x="280" y="295" font-size="44" fill="var(--cyan)" text-anchor="middle">74,7%</text></g>
+    <g class="pop" data-steps="1600"><text x="540" y="345" font-size="44" fill="var(--magenta)" text-anchor="middle">66,3%</text></g>
+    <g class="pop" data-steps="1900"><text x="800" y="391" font-size="44" fill="var(--grey)" text-anchor="middle">58,7%</text></g>
+    <g class="fade" data-steps="400" font-size="24" fill="#fff" text-anchor="middle">
+        <text x="280" y="800">zanubrutinibe</text>
+        <text x="540" y="800">acalabrutinibe</text>
+        <text x="800" y="800">ibrutinibe</text>
+    </g>
+    <text class="fade" data-steps="2700" x="540" y="870" font-size="28" fill="#fff" text-anchor="middle">Risco de descontinuar: HR 0,76 vs acala · HR 0,51 vs ibru</text>
+    <text class="fade" data-steps="3200" x="540" y="912" font-size="22" fill="var(--gold)" text-anchor="middle">dados observacionais dos EUA, ajustados por idade, sexo, pagador e comorbidades</text>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Saba N et al. EHA 2026, pôster PS1710</text>
+</svg>
+</section>
+
+<!-- 9 · ESTUDO 215 -->
+<section class="scene" data-dur="7000">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="Estudo 215: após a troca para zanubrutinibe, 60,4% dos eventos de intolerância ao ibrutinibe e 71,9% dos eventos de intolerância ao acalabrutinibe não voltaram; mais de 90% com controle da doença">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">08 · TROCA POR INTOLERÂNCIA · ESTUDO 215</text>
+    <text x="70" y="170" font-size="46" fill="#fff">Não tolerou um iBTK?</text>
+    <text x="70" y="226" font-size="46" fill="#fff">A troca pode funcionar</text>
+
+    <circle cx="300" cy="480" r="140" fill="none" stroke="var(--navy-2)" stroke-width="36"/>
+    <circle class="ring" data-steps="400" cx="300" cy="480" r="140" fill="none" stroke="var(--grey)" stroke-width="36" pathLength="1" transform="rotate(-90 300 480)" style="--v:.604"/>
+    <text class="pop" data-steps="1200" x="300" y="500" font-size="64" fill="#fff" text-anchor="middle">60,4%</text>
+    <circle cx="780" cy="480" r="140" fill="none" stroke="var(--navy-2)" stroke-width="36"/>
+    <circle class="ring" data-steps="800" cx="780" cy="480" r="140" fill="none" stroke="var(--magenta)" stroke-width="36" pathLength="1" transform="rotate(-90 780 480)" style="--v:.719"/>
+    <text class="pop" data-steps="1600" x="780" y="500" font-size="64" fill="#fff" text-anchor="middle">71,9%</text>
+    <g class="fade" data-steps="1600" font-size="24" fill="var(--blue-light)" text-anchor="middle">
+        <text x="300" y="680">dos eventos de intolerância</text>
+        <text x="300" y="712">ao <tspan fill="#fff">ibrutinibe</tspan> não voltaram</text>
+        <text x="780" y="680">dos eventos de intolerância</text>
+        <text x="780" y="712">ao <tspan fill="#fff">acalabrutinibe</tspan> não voltaram</text>
+    </g>
+    <g class="pop" data-steps="2600">
+        <rect x="170" y="780" width="740" height="80" rx="40" fill="var(--green)"/>
+        <text x="540" y="832" font-size="32" fill="var(--navy)" text-anchor="middle">&gt;90% mantiveram o controle da doença</text>
+    </g>
+    <text class="fade" data-steps="3200" x="540" y="910" font-size="22" fill="var(--gold)" text-anchor="middle">estudo de fase 2: testa a troca por intolerância, não superioridade</text>
+    <text x="540" y="1000" font-size="17" fill="var(--grey)" text-anchor="middle">Shadman M et al. Blood Adv 2025;9(16):4100-10</text>
+</svg>
+</section>
+
+<!-- 10 · PROTOCOLO -->
+<section class="scene" data-dur="7500">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="Protocolo de troca da farmácia clínica em quatro passos: gatilho, critério, intervenção farmacêutica e monitoramento">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">09 · FARMÁCIA CLÍNICA</text>
+    <text x="70" y="170" font-size="46" fill="#fff">Protocolo de troca em 4 passos</text>
+    <path class="signal" data-steps="300" pathLength="1" d="M 135 290 V 710" stroke="var(--blue-light)" stroke-width="4" fill="none"/>
+</svg>
+</section>
+
+<!-- 11 · FARMACOECONOMIA -->
+<section class="scene" data-dur="8500">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="Farmacoeconomia nos EUA: vs ibrutinibe NNT 8 e economia de 47.132 dólares por paciente em 24 meses; vs acalabrutinibe NNT 10 a 15 e economia de 7.335 dólares; ICER de 120.634 dólares por QALY">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">10 · FARMACOECONOMIA</text>
+    <text x="70" y="170" font-size="46" fill="#fff">O que cada real compra</text>
+    <text x="70" y="226" font-size="46" fill="#fff">de resultado</text>
+
+    <g class="pop" data-steps="300">
+        <rect x="70" y="280" width="455" height="340" rx="24" fill="var(--navy-2)" stroke="var(--grey)" stroke-width="3"/>
+        <text x="297" y="330" font-size="26" fill="var(--blue-light)" text-anchor="middle">vs ibrutinibe</text>
+        <text x="297" y="415" font-size="70" fill="#fff" text-anchor="middle">NNT 8</text>
+        <text x="297" y="450" font-size="20" fill="var(--grey)" text-anchor="middle">para evitar 1 progressão ou óbito</text>
+        <text x="297" y="540" font-size="52" fill="var(--gold)" text-anchor="middle">US$ 47.132</text>
+        <text x="297" y="578" font-size="20" fill="var(--grey)" text-anchor="middle">economia por paciente em 24 meses</text>
+    </g>
+    <g class="pop" data-steps="1200">
+        <rect x="555" y="280" width="455" height="340" rx="24" fill="var(--navy-2)" stroke="var(--magenta)" stroke-width="3"/>
+        <text x="782" y="330" font-size="26" fill="var(--blue-light)" text-anchor="middle">vs acalabrutinibe</text>
+        <text x="782" y="415" font-size="70" fill="#fff" text-anchor="middle">NNT 10–15</text>
+        <text x="782" y="450" font-size="20" fill="var(--grey)" text-anchor="middle">para evitar 1 progressão ou óbito</text>
+        <text x="782" y="540" font-size="52" fill="var(--gold)" text-anchor="middle">US$ 7.335</text>
+        <text x="782" y="578" font-size="20" fill="var(--grey)" text-anchor="middle">economia por paciente em 24 meses</text>
+    </g>
+    <g class="fade" data-steps="2400">
+        <text x="540" y="690" font-size="28" fill="#fff" text-anchor="middle">ICER vs ibrutinibe (EUA): <tspan fill="var(--gold)">US$ 120.634/QALY</tspan></text>
+        <text x="540" y="728" font-size="22" fill="var(--blue-light)" text-anchor="middle">custo-efetivo no limiar adotado pelos autores</text>
+    </g>
+    <g class="pop" data-steps="3400">
+        <rect x="120" y="785" width="840" height="120" rx="24" fill="var(--navy-3)" stroke="var(--gold)" stroke-width="3"/>
+        <text x="540" y="835" font-size="26" fill="#fff" text-anchor="middle">Na China, só seria custo-efetivo com preço &gt;30% menor:</text>
+        <text x="540" y="875" font-size="26" fill="var(--gold)" text-anchor="middle">o valor depende do comparador, do preço e do sistema</text>
+    </g>
+    <text x="540" y="985" font-size="17" fill="var(--grey)" text-anchor="middle">Simulações dos EUA, não são dados do SUS ou da saúde suplementar brasileira</text>
+    <text x="540" y="1008" font-size="17" fill="var(--grey)" text-anchor="middle">J Manag Care Spec Pharm 2025 · Future Oncol 2026 · PharmacoEconomics 2024</text>
+</svg>
+</section>
+
+<!-- 12 · FECHAMENTO -->
+<section class="scene" data-dur="8000">
+<svg viewBox="0 0 1080 1080" role="img" aria-label="O que levar da aula: seletividade e cobertura da BTK ajudam a explicar o perfil de segurança; a evidência vem de SEQUOIA e ALPINE, com MAIC e vida real como hipóteses; o farmacêutico clínico conduz a troca e fala a língua do valor">
+    <text x="70" y="110" font-size="26" fill="var(--cyan)" letter-spacing="3">PARA LEVAR</text>
+    <text x="70" y="170" font-size="46" fill="#fff">O que fica desta aula</text>
+    <g class="fade" data-steps="400">
+        <circle cx="110" cy="290" r="30" fill="var(--cyan)"/><text x="110" y="301" font-size="30" fill="var(--navy)" text-anchor="middle">1</text>
+        <text x="165" y="285" font-size="30" fill="#fff">Seletividade e cobertura da BTK</text>
+        <text x="165" y="322" font-size="24" fill="var(--blue-light)">ajudam a explicar o perfil de segurança</text>
+    </g>
+    <g class="fade" data-steps="1300">
+        <circle cx="110" cy="420" r="30" fill="var(--gold)"/><text x="110" y="431" font-size="30" fill="var(--navy)" text-anchor="middle">2</text>
+        <text x="165" y="415" font-size="30" fill="#fff">Prova: SEQUOIA e ALPINE</text>
+        <text x="165" y="452" font-size="24" fill="var(--blue-light)">pista: MAIC e vida real (geram hipóteses)</text>
+    </g>
+    <g class="fade" data-steps="2200">
+        <circle cx="110" cy="550" r="30" fill="var(--magenta)"/><text x="110" y="561" font-size="30" fill="var(--navy)" text-anchor="middle">3</text>
+        <text x="165" y="545" font-size="30" fill="#fff">Troca por intolerância com critério</text>
+        <text x="165" y="582" font-size="24" fill="var(--blue-light)">gatilho, critério, intervenção e monitoramento</text>
+    </g>
+    <g class="fade" data-steps="3100">
+        <circle cx="110" cy="680" r="30" fill="var(--green)"/><text x="110" y="691" font-size="30" fill="var(--navy)" text-anchor="middle">4</text>
+        <text x="165" y="675" font-size="30" fill="#fff">Valor = resultado por real investido</text>
+        <text x="165" y="712" font-size="24" fill="var(--blue-light)">a língua comum com gestores e operadoras</text>
+    </g>
+    <g class="pop" data-steps="4200">
+        <rect x="70" y="780" width="940" height="130" rx="24" fill="var(--navy-3)" stroke="var(--cyan)" stroke-width="3"/>
+        <text x="540" y="835" font-size="32" fill="#fff" text-anchor="middle">Thiago Abranches · CRF-SP 91811</text>
+        <text x="540" y="875" font-size="22" fill="var(--blue-light)" text-anchor="middle">Farmácia clínica oncológica · br.linkedin.com/in/thiago-abranches</text>
+    </g>
+    <text x="540" y="985" font-size="17" fill="var(--grey)" text-anchor="middle">Resumo educativo destinado a profissionais de saúde. Não substitui a bula</text>
+    <text x="540" y="1008" font-size="17" fill="var(--grey)" text-anchor="middle">nem a avaliação clínica individual. Referências completas na aula.</text>
+</svg>
+</section>
+
+<div class="footer"><span>Thiago Abranches · CRF-SP 91811</span><span class="dots" id="dots"></span></div>
+</div>
+
+<script>
+(() => {
+    const NS = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, parent, text) {
+        const n = document.createElementNS(NS, tag);
+        for (const k in attrs) n.setAttribute(k, attrs[k]);
+        if (text != null) n.textContent = text;
+        if (parent) parent.appendChild(n);
+        return n;
+    }
+
+    /* 01 · BTK no centro e 5 primas com a razão de IC50 (zanubrutinibe:ibrutinibe) */
+    (function buildSelectivity() {
+        const svg = document.getElementById('sel');
+        const cx = 540, cy = 545;
+        const cousins = [['EGFR', '×6'], ['ITK', '×33'], ['JAK3', '×51'], ['HER2', '×70'], ['TEC', '×2,4']];
+        const pts = cousins.map((_, i) => {
+            const a = (-90 + i * 72) * Math.PI / 180;
+            return { x: cx + Math.cos(a) * 270, y: cy + Math.sin(a) * 250 };
+        });
+        pts.forEach((p, i) => el('path', {
+            class: 'signal', 'data-steps': 800 + i * 200, pathLength: 1, d: `M ${cx} ${cy} L ${p.x} ${p.y}`,
+            stroke: 'var(--grey)', 'stroke-width': 3, 'stroke-dasharray': '1 1', fill: 'none', opacity: .6,
+        }, svg));
+        const b = el('g', { class: 'pop', 'data-steps': 0 }, svg);
+        el('circle', { cx, cy, r: 95, fill: 'var(--cyan)' }, b);
+        el('text', { x: cx, y: cy + 20, 'font-size': 56, fill: 'var(--navy)', 'text-anchor': 'middle' }, b, 'BTK');
+        pts.forEach((p, i) => {
+            const g = el('g', { class: 'pop', 'data-steps': 1000 + i * 200 }, svg);
+            el('circle', { cx: p.x, cy: p.y, r: 66, fill: '#0b3554', stroke: 'var(--grey)', 'stroke-width': 4 }, g);
+            el('text', { x: p.x, y: p.y + 10, 'font-size': 30, fill: '#fff', 'text-anchor': 'middle' }, g, cousins[i][0]);
+            const tag = el('g', { class: 'pop', 'data-steps': 2600 + i * 180 }, svg);
+            el('rect', { x: p.x + 30, y: p.y - 86, width: 96, height: 46, rx: 23, fill: 'var(--gold)' }, tag);
+            el('text', { x: p.x + 78, y: p.y - 54, 'font-size': 26, fill: 'var(--navy)', 'text-anchor': 'middle' }, tag, cousins[i][1]);
+        });
+        el('text', { class: 'fade', 'data-steps': 1500, x: cx, y: 850, 'font-size': 26, fill: '#fff', 'text-anchor': 'middle' },
+            svg, 'Fora do alvo: diarreia, infecção, cardiotoxicidade, sangramento');
+    })();
+
+    /* 05 · pares de barras de segurança do ALPINE */
+    (function buildSafety() {
+        const svg = document.getElementById('alpineSafety');
+        const rows = [
+            ['FA/flutter (qualquer grau)', 6.8, 16.4],
+            ['Descontinuação por EA', 19.8, 26.2],
+            ['Hospitalização', 46.3, 55.6],
+            ['EA grau 3–5', 72.5, 77.5],
+        ];
+        const X0 = 70, W = 760, MAX = 80;
+        rows.forEach(([label, z, i], k) => {
+            const y = 330 + k * 140;
+            const t = 600 + k * 700;
+            el('text', { class: 'fade', 'data-steps': t, x: X0, y, 'font-size': 26, fill: '#fff' }, svg, label);
+            el('rect', { class: 'grow', 'data-steps': t + 100, x: X0, y: y + 16, width: W * z / MAX, height: 34, rx: 8, fill: 'var(--cyan)' }, svg);
+            el('rect', { class: 'grow', 'data-steps': t + 300, x: X0, y: y + 58, width: W * i / MAX, height: 34, rx: 8, fill: 'var(--grey)' }, svg);
+            el('text', { class: 'fade', 'data-steps': t + 700, x: X0 + W * z / MAX + 14, y: y + 43, 'font-size': 26, fill: 'var(--cyan)' }, svg, `${String(z).replace('.', ',')}%`);
+            el('text', { class: 'fade', 'data-steps': t + 900, x: X0 + W * i / MAX + 14, y: y + 85, 'font-size': 26, fill: 'var(--grey)' }, svg, `${String(i).replace('.', ',')}%`);
+        });
+    })();
+
+    /* 09 · protocolo de troca */
+    (function buildProtocol() {
+        const svg = document.querySelectorAll('.scene')[9].querySelector('svg');
+        const steps = [
+            ['Gatilho', 'reconhecer o padrão de intolerância do agente', 'var(--cyan)'],
+            ['Critério', 'toxicidade documentada (grau CTCAE), nunca progressão', 'var(--gold)'],
+            ['Intervenção', 'documentar e propor a troca ao prescritor', 'var(--magenta)'],
+            ['Monitoramento', 'reavaliar recorrência e reforçar adesão', 'var(--green)'],
+        ];
+        steps.forEach(([title, desc, color], i) => {
+            const y = 290 + i * 140;
+            const g = el('g', { class: 'fade', 'data-steps': 600 + i * 800 }, svg);
+            el('circle', { cx: 135, cy: y, r: 40, fill: color }, g);
+            el('text', { x: 135, y: y + 14, 'font-size': 38, fill: 'var(--navy)', 'text-anchor': 'middle' }, g, String(i + 1));
+            el('text', { x: 205, y: y - 6, 'font-size': 36, fill: '#fff' }, g, title);
+            el('text', { x: 205, y: y + 32, 'font-size': 24, fill: 'var(--blue-light)' }, g, desc);
+        });
+        const note = el('g', { class: 'pop', 'data-steps': 4200 }, svg);
+        el('rect', { x: 70, y: 820, width: 940, height: 100, rx: 24, fill: 'var(--navy-3)', stroke: 'var(--cyan)', 'stroke-width': 3 }, note);
+        el('text', { x: 540, y: 862, 'font-size': 26, fill: '#fff', 'text-anchor': 'middle' }, note, '4 casos reais do palestrante: todas as trocas');
+        el('text', { x: 540, y: 898, 'font-size': 26, fill: 'var(--gold)', 'text-anchor': 'middle' }, note, 'por segurança, preservando a resposta');
+        el('text', { x: 540, y: 1000, 'font-size': 17, fill: 'var(--grey)', 'text-anchor': 'middle' }, svg, 'Baseado no Estudo 215 (Shadman M et al. Blood Adv 2025) e na prática clínica do palestrante');
+    })();
+
+    /* Linha do tempo: cenas em sequência; para no final */
+    const stage = document.getElementById('stage');
+    const scenes = [...document.querySelectorAll('.scene')];
+    const durs = scenes.map(s => +s.dataset.dur);
+    const dotsBox = document.getElementById('dots');
+    const dots = scenes.map(() => { const d = document.createElement('i'); dotsBox.appendChild(d); return d; });
+    const timelines = scenes.map(s => {
+        const items = [];
+        s.querySelectorAll('[data-steps]').forEach(node => node.dataset.steps.split(',').forEach(tok => {
+            const [ms, cls = 'on'] = tok.trim().split(':');
+            items.push({ el: node, at: +ms, cls });
+        }));
+        return items;
+    });
+
+    function resize() { stage.style.setProperty('--scale', Math.min(innerWidth / 1080, innerHeight / 1080)); }
+    addEventListener('resize', resize);
+    resize();
+
+    let idx = -1, t = 0, last = null;
+    window.player = { done: false };
+    function goTo(i) {
+        if (idx >= 0) scenes[idx].classList.remove('active');
+        idx = i; t = 0;
+        scenes[idx].classList.add('active');
+        dots.forEach((d, k) => { d.classList.toggle('cur', k === idx); d.classList.toggle('past', k < idx); });
+    }
+    const hash = location.hash.match(/^#(\d+)(?:@(\d+))?$/);
+    function frame(now) {
+        if (last === null) last = now;
+        t += Math.min(now - last, 100);
+        last = now;
+        if (hash && hash[2]) t = +hash[2];
+        timelines[idx].forEach(({ el, at, cls }) => el.classList.toggle(cls, t >= at));
+        if (t >= durs[idx]) {
+            if (idx === scenes.length - 1 || hash) { window.player.done = true; return; }
+            goTo(idx + 1);
+        }
+        requestAnimationFrame(frame);
+    }
+    addEventListener('load', () => { goTo(hash ? +hash[1] - 1 : 0); requestAnimationFrame(frame); });
+})();
+</script>
+</body>
+</html>
