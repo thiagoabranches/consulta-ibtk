@@ -59,31 +59,10 @@ def _import(name):
                       f"Rode o script na pasta onde {name}.py esta.")
 
 
-def _pick(obj, names):
-    for n in names:
-        fn = getattr(obj, n, None)
-        if callable(fn):
-            return fn
-    return None
-
-
-def _public(obj):
-    return ", ".join(n for n in dir(obj) if not n.startswith("_")) or "(nada)"
-
-
 def _read_from_mpq(mpq_mod, map_path, inner_name):
     """Devolve os bytes de `inner_name` dentro do .w3x (ou None se nao existir)."""
-    opener = _pick(mpq_mod, ["MPQ", "MPQArchive", "Archive", "open_mpq", "open_archive", "open"])
-    if opener is None:
-        raise W3Error("decrypt_mpq: nenhuma classe/funcao de abertura reconhecida.\n"
-                      f"  Disponivel: {_public(mpq_mod)}\n  Ajuste _read_from_mpq() em w3search.py.")
-    archive = opener(map_path)
-    reader = _pick(archive, ["read_file", "read", "extract", "get_file", "open_file", "readfile"])
-    if reader is None:
-        raise W3Error("decrypt_mpq: metodo de leitura de arquivo nao reconhecido.\n"
-                      f"  Disponivel no objeto: {_public(archive)}\n  Ajuste _read_from_mpq().")
     try:
-        data = reader(inner_name)
+        data = mpq_mod.ler_arquivo(map_path, inner_name)
     except (KeyError, FileNotFoundError):
         return None
     if data is not None and not isinstance(data, (bytes, bytearray)) and hasattr(data, "read"):
@@ -94,15 +73,10 @@ def _read_from_mpq(mpq_mod, map_path, inner_name):
 def _parse_objects(obj_mod, kind, data):
     """Devolve {'original': {...}, 'custom': {...}} a partir dos bytes do arquivo."""
     ext = TYPES[kind][0].rsplit(".", 1)[1]  # w3a / w3u / w3t
-    parser = _pick(obj_mod, [f"parse_{ext}", f"read_{ext}", f"load_{ext}", f"parse_{kind}s",
-                             "parse_objects", "parse", "read", "loads"])
-    if parser is None:
-        raise W3Error("wc3obj: funcao de parse nao reconhecida.\n"
-                      f"  Disponivel: {_public(obj_mod)}\n  Ajuste _parse_objects().")
     try:
-        return parser(data)
-    except TypeError:
-        return parser(data, ext)  # parsers genericos: parse(data, 'w3a')
+        return obj_mod.parse_object_file(data, ext)
+    except (ValueError, KeyError):
+        return obj_mod.parse_object_file(data, TYPES[kind][0])  # tenta 'war3map.w3a'
 
 
 # --------------------------------------------------------------------------
