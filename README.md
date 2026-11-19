@@ -6,6 +6,6 @@ Protótipo de consulta à literatura científica e às bulas registradas na ANVI
 
 **Vínculos:** o autor atua como palestrante da BeOne Medicines, fabricante do zanubrutinibe. Nenhum fabricante financiou ou revisou o conteúdo.
 
-**Estado:** versão de demonstração (base revisada em 01/10/2026; 147 achados, 73 referências). A revisão da base por hematologistas sem vínculo com fabricantes está em andamento.
+**Estado:** versão de demonstração (base de 04/10/2026; 148 achados, 78 referências). A revisão independente da base por hematologistas está a iniciar; cada revisor declara seus vínculos com fabricantes na plataforma antes de registrar qualquer decisão.
 
 Autor: Thiago Abranches, farmacêutico oncológico (CRF-SP 91811).
